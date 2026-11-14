@@ -3,7 +3,7 @@ import { defineConfig } from 'wxt';
 import { generateThemeIcons } from './scripts/theme-icons.mjs';
 
 export default defineConfig({
-  modules: ['@wxt-dev/auto-icons'],
+  modules: ['@wxt-dev/auto-icons', '@wxt-dev/i18n/module'],
   hooks: {
     async 'build:before'() {
       await generateThemeIcons();
@@ -14,9 +14,11 @@ export default defineConfig({
   },
 
   manifest: ({ browser }) => ({
-    name: 'Link Fixer',
+    name: '__MSG_extensionName__',
+    description: '__MSG_extensionDescription__',
+    default_locale: 'ja',
     action: {
-      default_title: 'Link Fixer',
+      default_title: '__MSG_extensionName__',
       default_icon: {
         16: 'icons/16.png',
         32: 'icons/32.png',

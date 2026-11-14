@@ -1,0 +1,56 @@
+extensionName: Link Fixer
+extensionDescription: 正規表現のルールで URL を書き換えます。ページを開く前にリダイレクトします。
+
+options:
+  title: Link Fixer
+  lead: URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
+
+  siteAccess:
+    legend: サイトアクセス
+    checking: サイトアクセスの状態を確認しています…
+    request: サイトアクセスを許可
+    granted: サイトアクセスは許可されています。
+    denied: サイトアクセスが許可されていません。URL の書き換えには許可が必要です。
+    failed: サイトアクセスを許可できませんでした。ブラウザの拡張機能の設定から許可してください。
+
+  rules:
+    legend: ルール
+    hint: 左の正規表現にマッチした URL を、右の URL に置き換えます。正規表現は DNR が受け付ける形式で指定してください。
+    regexLabel: マッチする正規表現
+    substitutionLabel: 置換後の URL
+    remove: 削除
+    add: ルールを追加
+    save: 保存
+    loading: 読み込み中…
+    loadFailed: 'ルールの読み込みに失敗しました: {error}'
+    bothRequired: '{line} 行目: 正規表現と置換後の URL の両方を入力してください。'
+    unsupported: '{line} 行目の正規表現がサポートされていません: {reason}'
+    unknownReason: 理由不明
+    saving: 保存中…
+    saved: '{count} 件のルールを保存しました。'
+    cleared: すべてのルールを削除しました。
+    saveFailed: '保存に失敗しました: {error}'
+
+  playground:
+    legend: Playground
+    hint: 保存済みのルールで URL がどう書き換わるかを試せます。DNR の条件（大文字小文字を区別しない、fragment は除外）に合わせて判定します。
+    urlLabel: 試す URL
+    run: 実行
+    resultLabel: Playground の結果
+    urlRequired: 試す URL を入力してください。
+    empty: 保存済みのルールがありません。
+    fragmentIgnored: '# 以降はネットワークリクエストに含まれないため、判定から除外しています。'
+    noMatch: どのルールにもマッチしませんでした。
+    lineMiss: '{line} 行目 マッチしない'
+    lineResult: '{line} 行目 {status}: {url}'
+    statusApplied: 適用
+    statusNotApplied: マッチ（優先度が低いため適用されない）
+    uncomputable: （書き換え結果を計算できませんでした）
+    unchanged: （URL は変わりません）
+    invalidUrl: （有効な URL ではありません）
+    error: 'エラー: {message}'
+    failed: 'シミュレーションに失敗しました: {error}'
+
+popup:
+  description: 保存したルールで URL を書き換えます。
+  openOptions: 設定を開く

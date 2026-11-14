@@ -1,0 +1,56 @@
+extensionName: Link Fixer
+extensionDescription: Rewrite URLs with regular expression rules. Redirects happen before the page loads.
+
+options:
+  title: Link Fixer
+  lead: Register rules that rewrite URLs. They are evaluated from top to bottom, and the first matching rule is applied.
+
+  siteAccess:
+    legend: Site access
+    checking: Checking site access…
+    request: Allow site access
+    granted: Site access is allowed.
+    denied: Site access is not allowed. Allowing it is required to rewrite URLs.
+    failed: Could not allow site access. Allow it from the extension settings in your browser.
+
+  rules:
+    legend: Rules
+    hint: URLs matching the regular expression on the left are replaced with the URL on the right. Use the regular expression syntax accepted by DNR.
+    regexLabel: Matching regular expression
+    substitutionLabel: Replacement URL
+    remove: Remove
+    add: Add rule
+    save: Save
+    loading: Loading…
+    loadFailed: 'Could not load the rules: {error}'
+    bothRequired: 'Line {line}: enter both the regular expression and the replacement URL.'
+    unsupported: 'The regular expression on line {line} is not supported: {reason}'
+    unknownReason: unknown reason
+    saving: Saving…
+    saved: 'Saved rules: {count}'
+    cleared: All rules were removed.
+    saveFailed: 'Could not save: {error}'
+
+  playground:
+    legend: Playground
+    hint: Try how the saved rules rewrite a URL. Matching follows the DNR conditions (case-insensitive, fragments excluded).
+    urlLabel: URL to test
+    run: Run
+    resultLabel: Playground result
+    urlRequired: Enter a URL to test.
+    empty: There are no saved rules.
+    fragmentIgnored: 'Text after # is not part of the network request, so it is excluded from matching.'
+    noMatch: No rule matched.
+    lineMiss: 'Line {line}: no match'
+    lineResult: 'Line {line}: {status}: {url}'
+    statusApplied: applied
+    statusNotApplied: matched but not applied (lower priority)
+    uncomputable: (could not compute the rewritten URL)
+    unchanged: (URL is unchanged)
+    invalidUrl: (not a valid URL)
+    error: 'Error: {message}'
+    failed: 'Simulation failed: {error}'
+
+popup:
+  description: Rewrite URLs with your saved rules.
+  openOptions: Open settings
