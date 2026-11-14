@@ -35,6 +35,28 @@
 
           <div id="rows"></div>
 
+          <template id="rule-template">
+            <div class="rule-row">
+              <input
+                type="text"
+                class="regex"
+                aria-label="マッチする正規表現"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="^https://example\.com/search\?q=(.*)$"
+              />
+              <input
+                type="text"
+                class="substitution"
+                aria-label="置換後の URL"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="https://example.com/find?query=\1"
+              />
+              <button type="button" class="remove">削除</button>
+            </div>
+          </template>
+
           <div class="actions">
             <button type="button" id="add">ルールを追加</button>
           </div>
