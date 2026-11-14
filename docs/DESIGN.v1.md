@@ -27,13 +27,18 @@ link-fixer/
 ├── package.json
 ├── tsconfig.json
 ├── wxt.config.ts
-└── entrypoints/
-    └── options/
-        ├── index.html
-        └── main.ts
+├── entrypoints/
+│   └── options/
+│       ├── index.html
+│       ├── main.ts
+│       └── style.css
+└── test/
+    └── preview.html
 ```
 
-スタイルは `index.html` 内の `<style>` に記述する。
+スタイルは `entrypoints/options/style.css` に記述する。色・フォント・部品の見た目はブラウザ既定に任せ、レイアウトに必要な最小限だけを指定する。OS やブラウザで見た目が異なってよい。
+
+`test/preview.html` は、サンプル入りの静的なプレビュー。ブラウザで直接開いて見た目を確認するための開発用ファイルで、拡張機能には含まれない（JS は動作しない）。
 
 `package-lock.json` は npm が生成し、依存関係を固定するため Git 管理する。`.output/`、`.wxt/`、`node_modules/` は Git 管理しない。
 
