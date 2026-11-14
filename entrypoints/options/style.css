@@ -15,7 +15,7 @@ body {
   max-width: 55rem;
   margin: 0 auto;
   padding: 1.5rem;
-  background: Canvas;
+  background: color-mix(in srgb, CanvasText 4%, Canvas);
   color: CanvasText;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.867rem; /* Firefox の in-content の small と同じ比率 */
@@ -57,6 +57,7 @@ fieldset {
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 0.25rem;
+  background: Canvas;
 }
 
 legend {
@@ -145,6 +146,16 @@ button {
   font: inherit;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   resize: vertical;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: Canvas;
+  }
+
+  fieldset {
+    background: color-mix(in srgb, CanvasText 5%, Canvas);
+  }
 }
 
 @media (max-width: 40rem) {
