@@ -17,7 +17,7 @@ const addButton = requiredElement<HTMLButtonElement>(document, '#add');
 const saveButton = requiredElement<HTMLButtonElement>(document, '#save');
 const playgroundUrlEl = requiredElement<HTMLInputElement>(document, '#playground-url');
 const playgroundRunButton = requiredElement<HTMLButtonElement>(document, '#playground-run');
-const playgroundResultEl = requiredElement<HTMLParagraphElement>(document, '#playground-result');
+const playgroundResultEl = requiredElement<HTMLTextAreaElement>(document, '#playground-result');
 const permissionStatusEl = requiredElement<HTMLParagraphElement>(document, '#permission-status');
 const permissionRequestButton = requiredElement<HTMLButtonElement>(document, '#permission-request');
 
@@ -293,14 +293,8 @@ async function loadSavedRules(): Promise<SavedRule[]> {
     .sort((a, b) => b.priority - a.priority);
 }
 
-function createCode(text: string) {
-  const element = document.createElement('code');
-  element.textContent = text;
-  return element;
-}
-
 function showPlaygroundError(message: string) {
-  playgroundResultEl.replaceChildren(`エラー: ${message}`);
+  playgroundResultEl.value = `エラー: ${message}`;
 }
 
 async function runPlayground() {
@@ -317,68 +311,58 @@ async function runPlayground() {
     const rules = await loadSavedRules();
 
     if (!rules.length) {
-      playgroundResultEl.replaceChildren('保存済みのルールがありません。');
+      playgroundResultEl.value = '保存済みのルールがありません。';
       return;
     }
 
     const target = normalizeUrl(url);
-    const notes: HTMLParagraphElement[] = [];
+    const lines: string[] = [];
 
     if (target.hadFragment) {
-      const note = document.createElement('p');
-      note.textContent =
-        '# 以降はネットワークリクエストに含まれないため、判定から除外しています。';
-      notes.push(note);
+      lines.push(
+        '# 以降はネットワークリクエストに含まれないため、判定から除外しています。',
+      );
     }
 
     const outcomes = evaluateRules(target.url, rules);
 
     if (!outcomes.some((outcome) => outcome.matched)) {
-      const note = document.createElement('p');
-      note.textContent = 'どのルールにもマッチしませんでした。';
-      notes.push(note);
+      lines.push('どのルールにもマッチしませんでした。');
     }
 
-    const list = document.createElement('ul');
-
     outcomes.forEach((outcome, index) => {
-      const item = document.createElement('li');
-      item.append(`${index + 1} 行目 `);
+      const label = `${index + 1} 行目`;
 
       if (!outcome.matched) {
-        item.append('マッチしない');
-        list.append(item);
+        lines.push(`${label} マッチしない`);
         return;
       }
 
-      if (outcome.applied) {
-        item.append('適用');
-      } else {
-        item.append('マッチ（優先度が低いため適用されない）');
-      }
+      const status = outcome.applied
+        ? '適用'
+        : 'マッチ（優先度が低いため適用されない）';
 
       if (outcome.result === null) {
-        item.append('（書き換え結果を計算できませんでした）');
-        list.append(item);
+        lines.push(`${label} ${status}: （書き換え結果を計算できませんでした）`);
         return;
       }
 
-      item.append(': ', createCode(outcome.result));
+      let line = `${label} ${status}: ${outcome.result}`;
 
       if (outcome.result === target.url) {
-        item.append('（URL は変わりません）');
+        line += '（URL は変わりません）';
       } else {
         try {
           new URL(outcome.result);
         } catch {
-          item.append('（有効な URL ではありません）');
+          line += '（有効な URL ではありません）';
         }
       }
 
-      list.append(item);
+      lines.push(line);
     });
 
-    playgroundResultEl.replaceChildren(...notes, list);
+    playgroundResultEl.value = lines.join('\n');
   } catch (error) {
     showPlaygroundError(`シミュレーションに失敗しました: ${errorMessage(error)}`);
   } finally {
