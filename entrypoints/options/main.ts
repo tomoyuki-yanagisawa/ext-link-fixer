@@ -15,6 +15,9 @@ const rowsEl = requiredElement<HTMLDivElement>(document, '#rows');
 const statusEl = requiredElement<HTMLParagraphElement>(document, '#status');
 const addButton = requiredElement<HTMLButtonElement>(document, '#add');
 const saveButton = requiredElement<HTMLButtonElement>(document, '#save');
+const playgroundUrlEl = requiredElement<HTMLInputElement>(document, '#playground-url');
+const playgroundRunButton = requiredElement<HTMLButtonElement>(document, '#playground-run');
+const playgroundResultEl = requiredElement<HTMLParagraphElement>(document, '#playground-result');
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -191,6 +194,206 @@ async function saveRules() {
   }
 }
 
+type MatchingRule = {
+  id: number;
+  regex: string;
+  substitution: string;
+};
+
+type RuleOutcome = {
+  rule: MatchingRule;
+  matched: boolean;
+  applied: boolean;
+  /** 書き換え後の URL。マッチしていない、または計算できない場合は null。 */
+  result: string | null;
+};
+
+type NormalizedUrl = {
+  /** 実際のネットワークリクエストに近づけた URL。 */
+  url: string;
+  /** fragment が付いていたか。リクエストには含まれないため判定前に除去する。 */
+  hadFragment: boolean;
+};
+
+/**
+ * DNR のマッチ対象に近づける。
+ *
+ * - ホストの punycode 化や非 ASCII 文字のパーセントエンコードは `URL` に任せる
+ * - fragment はネットワークリクエストに含まれないため取り除く
+ */
+function normalizeUrl(input: string): NormalizedUrl {
+  try {
+    const parsed = new URL(input);
+    const hadFragment = parsed.hash !== '';
+    parsed.hash = '';
+    return { url: parsed.href, hadFragment };
+  } catch {
+    return { url: input, hadFragment: false };
+  }
+}
+
+// DNR と同じく、最初にマッチした箇所だけを \0〜\9 の参照で置き換える。
+function substituteFirstMatch(
+  url: string,
+  match: RegExpExecArray,
+  substitution: string,
+) {
+  const replaced = substitution.replace(
+    /\\(\d)/g,
+    (_, digit: string) => match[Number(digit)] ?? '',
+  );
+
+  return url.slice(0, match.index) + replaced + url.slice(match.index + match[0].length);
+}
+
+/**
+ * URL に対してルールを評価する。rules は優先度の高い順に並べて渡す。
+ *
+ * DNR の `regexFilter` は既定で大文字小文字を区別しないため、`i` フラグで
+ * 同じ挙動にしている。保存時に `isRegexSupported` で検証したルールが対象。
+ */
+function evaluateRules(url: string, rules: MatchingRule[]): RuleOutcome[] {
+  let applied = false;
+
+  return rules.map((rule) => {
+    let match: RegExpExecArray | null;
+    try {
+      match = new RegExp(rule.regex, 'i').exec(url);
+    } catch {
+      match = null;
+    }
+
+    if (!match) {
+      return { rule, matched: false, applied: false, result: null };
+    }
+
+    const result = substituteFirstMatch(url, match, rule.substitution);
+    const isApplied = !applied;
+    if (isApplied) {
+      applied = true;
+    }
+
+    return { rule, matched: true, applied: isApplied, result };
+  });
+}
+
+type SavedRule = MatchingRule & {
+  priority: number;
+};
+
+async function loadSavedRules(): Promise<SavedRule[]> {
+  const rules = await browser.declarativeNetRequest.getDynamicRules();
+
+  return rules
+    .map((rule) => ({
+      id: rule.id,
+      priority: rule.priority ?? 0,
+      regex: rule.condition?.regexFilter ?? '',
+      substitution: rule.action?.redirect?.regexSubstitution ?? '',
+    }))
+    .filter((rule) => rule.regex !== '' && rule.substitution !== '')
+    .sort((a, b) => b.priority - a.priority);
+}
+
+function createCode(text: string) {
+  const element = document.createElement('code');
+  element.textContent = text;
+  return element;
+}
+
+function showPlaygroundError(message: string) {
+  playgroundResultEl.className = 'error';
+  playgroundResultEl.replaceChildren(message);
+}
+
+async function runPlayground() {
+  const url = playgroundUrlEl.value.trim();
+
+  if (!url) {
+    showPlaygroundError('試す URL を入力してください。');
+    return;
+  }
+
+  playgroundRunButton.disabled = true;
+  playgroundResultEl.className = '';
+
+  try {
+    const rules = await loadSavedRules();
+
+    if (!rules.length) {
+      playgroundResultEl.replaceChildren('保存済みのルールがありません。');
+      return;
+    }
+
+    const target = normalizeUrl(url);
+    const notes: HTMLParagraphElement[] = [];
+
+    if (target.hadFragment) {
+      const note = document.createElement('p');
+      note.textContent =
+        '# 以降はネットワークリクエストに含まれないため、判定から除外しています。';
+      notes.push(note);
+    }
+
+    const outcomes = evaluateRules(target.url, rules);
+
+    if (!outcomes.some((outcome) => outcome.matched)) {
+      const note = document.createElement('p');
+      note.textContent = 'どのルールにもマッチしませんでした。';
+      notes.push(note);
+    }
+
+    const list = document.createElement('ul');
+
+    outcomes.forEach((outcome, index) => {
+      const item = document.createElement('li');
+      const label = document.createElement('span');
+      label.className = 'label';
+      label.textContent = `${index + 1} 行目`;
+      item.append(label, ' ');
+
+      if (!outcome.matched) {
+        item.append('マッチしない');
+        list.append(item);
+        return;
+      }
+
+      if (outcome.applied) {
+        item.classList.add('applied');
+        item.append('適用');
+      } else {
+        item.append('マッチ（優先度が低いため適用されない）');
+      }
+
+      if (outcome.result === null) {
+        item.append('（書き換え結果を計算できませんでした）');
+        list.append(item);
+        return;
+      }
+
+      item.append(': ', createCode(outcome.result));
+
+      if (outcome.result === target.url) {
+        item.append('（URL は変わりません）');
+      } else {
+        try {
+          new URL(outcome.result);
+        } catch {
+          item.append('（有効な URL ではありません）');
+        }
+      }
+
+      list.append(item);
+    });
+
+    playgroundResultEl.replaceChildren(...notes, list);
+  } catch (error) {
+    showPlaygroundError(`シミュレーションに失敗しました: ${errorMessage(error)}`);
+  } finally {
+    playgroundRunButton.disabled = false;
+  }
+}
+
 addButton.addEventListener('click', () => {
   const row = appendRow();
   requiredElement<HTMLInputElement>(row, '.regex').focus();
@@ -199,6 +402,15 @@ addButton.addEventListener('click', () => {
 formEl.addEventListener('submit', (event) => {
   event.preventDefault();
   saveRules();
+});
+
+playgroundRunButton.addEventListener('click', runPlayground);
+
+playgroundUrlEl.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    runPlayground();
+  }
 });
 
 loadRules();
