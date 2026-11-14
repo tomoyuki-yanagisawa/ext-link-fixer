@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Link Fixer — icon</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+
+      body {
+        margin: 0 auto;
+        max-width: 52rem;
+        padding: 1.5rem 1rem;
+        font-family: system-ui, sans-serif;
+        font-size: 0.875rem;
+      }
+
+      h1 {
+        margin: 0 0 0.5rem;
+        font-size: 1.3rem;
+      }
+
+      p {
+        margin: 0 0 1rem;
+        color: GrayText;
+      }
+
+      h2 {
+        margin: 0 0 0.5rem;
+        font-size: 0.95rem;
+      }
+
+      section {
+        margin-bottom: 1.5rem;
+      }
+
+      .strip {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+      }
+
+      .strip.light {
+        background: #f5f3f2;
+      }
+
+      .strip.dark {
+        background: #2b2a33;
+      }
+
+      .strip span {
+        font-size: 0.75rem;
+        opacity: 0.75;
+      }
+
+      .strip.light span {
+        color: #5f6368;
+      }
+
+      .strip.dark span {
+        color: #d7d7db;
+      }
+
+      img {
+        display: block;
+      }
+
+      .zoom {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .zoom img {
+        image-rendering: pixelated;
+        width: 96px;
+        height: 96px;
+      }
+
+      .zoom .light {
+        background: #f5f3f2;
+        padding: 6px;
+      }
+
+      .zoom .dark {
+        background: #2b2a33;
+        padding: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>アイコン</h1>
+    <p>
+      左から 16 / 32 / 48 / 64 / 128px。上段はライトテーマ（濃いアイコン）、下段はダークテーマ（明るいアイコン）。
+    </p>
+
+    <section>
+      <h2>一覧</h2>
+      <div class="strip light">
+        <img src="../assets/icon.svg" width="16" height="16" alt="" />
+        <img src="../assets/icon.svg" width="32" height="32" alt="" />
+        <img src="../assets/icon.svg" width="48" height="48" alt="" />
+        <img src="../assets/icon.svg" width="64" height="64" alt="" />
+        <img src="../assets/icon.svg" width="128" height="128" alt="" />
+        <span>light</span>
+      </div>
+      <div class="strip dark">
+        <img src="../assets/icon-dark.svg" width="16" height="16" alt="" />
+        <img src="../assets/icon-dark.svg" width="32" height="32" alt="" />
+        <img src="../assets/icon-dark.svg" width="48" height="48" alt="" />
+        <img src="../assets/icon-dark.svg" width="64" height="64" alt="" />
+        <img src="../assets/icon-dark.svg" width="128" height="128" alt="" />
+        <span>dark</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>16px 拡大</h2>
+      <div class="zoom">
+        <img class="light" src="../assets/icon.svg" width="16" height="16" alt="" />
+        <img class="dark" src="../assets/icon-dark.svg" width="16" height="16" alt="" />
+      </div>
+    </section>
+  </body>
+</html>

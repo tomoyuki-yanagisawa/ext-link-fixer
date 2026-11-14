@@ -18,6 +18,7 @@ Firefox / Chrome 共通で動作する、**正規表現による URL リダイ�
 - リダイレクトは `declarativeNetRequest`（DNR）の**動的ルール**で実行する。
 - DNR の動的ルールを設定の保存先としても使い、`storage.local` を使用しない。
 - バックグラウンドスクリプト、コンテンツスクリプト、独自サーバーは作らない。
+- ツールバーのアイコンからポップアップを開き、そこから設定画面を開けるようにする。ポップアップの JS はクリック時だけ動く。
 - テストフレームワークや実行時の追加依存ライブラリは、初版では導入しない。
 
 ## 3. 最小ディレクトリ構成
@@ -27,8 +28,14 @@ link-fixer/
 ├── package.json
 ├── tsconfig.json
 ├── wxt.config.ts
+├── assets/
+│   └── icon.svg
 ├── entrypoints/
-│   └── options/
+│   ├── options/
+│   │   ├── index.html
+│   │   ├── main.ts
+│   │   └── style.css
+│   └── popup/
 │       ├── index.html
 │       ├── main.ts
 │       └── style.css
@@ -51,6 +58,8 @@ link-fixer/
 - 画像・スクリプト等のサブリソースには適用しない。
 
 ### 設定画面
+
+- ツールバーのアイコン → ポップアップの「設定を開く」から開く。`browser.runtime.openOptionsPage()` を使う。
 
 - 1 行（または 1 ブロック）につき「マッチする正規表現」「置換後 URL」の 2 入力欄を表示する。
 - **追加**、**削除**、**保存**の 3 操作だけを用意する。
@@ -159,6 +168,8 @@ export default defineConfig({
 ```
 
 - WXT が `manifest.json` と `options_ui` を自動生成する。手書きの `manifest.json` は不要。
+- `@wxt-dev/auto-icons` が `assets/icon.svg` から各サイズの PNG を生成し、`icons` と `action.default_icon` を設定する。
+- Firefox では `action.theme_icons` でライト/ダークテーマ別のアイコンを指定する。`assets/icon.svg`（明るいテーマ用）と `assets/icon-dark.svg`（暗いテーマ用）から PNG を生成する。PNG は `build:before` フックでビルド時に生成し、Git 管理しない（`npm run icons:theme` で単独実行も可能）。Chrome の manifest には `theme_icons` を含めない。
 - Firefox は WXT のデフォルトが Manifest V2 のため、**Firefox のコマンドに `--mv3` を必ず指定**する。
 - Firefox の拡張機能 ID は `@link-fixer.tomoyuki-yanagisawa` とし、公開後も維持する。
 - 拡張機能の外部で保存・処理するためのユーザーデータ収集・送信は行わないため、Firefox のデータ収集申告を `none` とする。
@@ -179,6 +190,12 @@ export default defineConfig({
 - 保存：`browser.declarativeNetRequest.updateDynamicRules()`。
 - UI 操作、入力値の検証、DNR への変換はシンプルな関数で実装する。
 - Playground のマッチ判定と置換も同じファイル内の関数で実装する。
+
+### `entrypoints/popup/`
+
+- ツールバーのアイコンから開く小さなポップアップ。見出しと「設定を開く」ボタンだけを置く。
+- ボタンで `browser.runtime.openOptionsPage()` を呼び、設定画面をタブで開く。
+- ポップアップの JS はクリックしたときだけ実行され、常駐しない。
 
 ## 7. 開発・ビルド
 
