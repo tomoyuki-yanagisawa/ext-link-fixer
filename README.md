@@ -37,6 +37,8 @@
 2. `xpinstall.signatures.required` を `false` にする
 3. `link-fixer-<version>-firefox.xpi` を Firefox で開く
 
+Firefox 126 以前は、インストール時にサイトアクセスが許可されません。設定画面の上部にサイトアクセスの状態と「サイトアクセスを許可」ボタンが表示されるので、未許可の場合は押して許可してください（許可済みならボタンは無効になります）。表示されない場合は `about:addons` の Link Fixer →「権限」から「すべてのウェブサイトのデータへのアクセス」を許可します。許可しないと、ルールは保存できても実際のリダイレクトは行われません。
+
 設定の詳細は Mozilla のサポート記事を参照してください。
 
 - [アドオンの署名 | Firefox ヘルプ — 未署名のアドオンを利用したい場合](https://support.mozilla.org/ja/kb/add-on-signing-in-firefox#w_wei-shu-ming-noadoonwoshi-itaichang-he-shang-ji-yu-za-xiang-ke)

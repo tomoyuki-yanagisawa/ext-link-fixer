@@ -18,6 +18,10 @@ const saveButton = requiredElement<HTMLButtonElement>(document, '#save');
 const playgroundUrlEl = requiredElement<HTMLInputElement>(document, '#playground-url');
 const playgroundRunButton = requiredElement<HTMLButtonElement>(document, '#playground-run');
 const playgroundResultEl = requiredElement<HTMLParagraphElement>(document, '#playground-result');
+const permissionStatusEl = requiredElement<HTMLParagraphElement>(document, '#permission-status');
+const permissionRequestButton = requiredElement<HTMLButtonElement>(document, '#permission-request');
+
+const ORIGINS = ['http://*/*', 'https://*/*'];
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -394,6 +398,44 @@ async function runPlayground() {
   }
 }
 
+async function hasHostAccess() {
+  try {
+    return await browser.permissions.contains({ origins: ORIGINS });
+  } catch {
+    return true;
+  }
+}
+
+function setPermissionState(granted: boolean) {
+  permissionRequestButton.disabled = granted;
+  permissionStatusEl.className = granted ? 'ok' : 'error';
+  permissionStatusEl.textContent = granted
+    ? 'サイトアクセスは許可されています。'
+    : 'サイトアクセスが許可されていません。URL の書き換えには許可が必要です。';
+}
+
+async function updatePermissionState() {
+  setPermissionState(await hasHostAccess());
+}
+
+permissionRequestButton.addEventListener('click', async () => {
+  permissionRequestButton.disabled = true;
+
+  try {
+    if (await browser.permissions.request({ origins: ORIGINS })) {
+      setPermissionState(true);
+      return;
+    }
+  } catch {
+    // 失敗時も下の案内にまとめる
+  }
+
+  permissionRequestButton.disabled = false;
+  permissionStatusEl.className = 'error';
+  permissionStatusEl.textContent =
+    'サイトアクセスを許可できませんでした。ブラウザの拡張機能の設定から許可してください。';
+});
+
 addButton.addEventListener('click', () => {
   const row = appendRow();
   requiredElement<HTMLInputElement>(row, '.regex').focus();
@@ -414,3 +456,4 @@ playgroundUrlEl.addEventListener('keydown', (event) => {
 });
 
 loadRules();
+updatePermissionState();
