@@ -73,6 +73,7 @@ npm run build            # Chrome 向けビルド
 npm run build:firefox    # Firefox (MV3) 向けビルド
 npm run zip              # Chrome 向け zip
 npm run zip:firefox      # Firefox 向け zip
+npm run xpi              # Firefox 向け zip と xpi
 npm run typecheck        # 型チェック
 ```
 

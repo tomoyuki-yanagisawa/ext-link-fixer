@@ -188,6 +188,7 @@ npm run dev              # Chrome
 npm run dev:firefox      # Firefox (MV3)
 npm run build            # Chrome
 npm run build:firefox    # Firefox (MV3)
+npm run xpi              # Firefox 向けの zip と xpi
 npm run typecheck        # TypeScript の型チェック
 ```
 
