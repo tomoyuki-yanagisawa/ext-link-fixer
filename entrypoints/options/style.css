@@ -132,7 +132,16 @@ ul {
 }
 
 #playground-result {
-  overflow-wrap: anywhere;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.5em 0.6em;
+  border: 1px solid var(--border);
+  border-radius: 0.45em;
+  background: Field;
+  color: FieldText;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: inherit;
+  resize: vertical;
 }
 
 .rule-row {
