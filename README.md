@@ -47,7 +47,7 @@ Firefox 126 以前は、インストール時にサイトアクセスが許可�
 
 ## 使い方
 
-1. 拡張機能の設定画面を開く（Chrome は `chrome://extensions` から「拡張機能のオプション」、Firefox はアドオンマネージャーから「オプション」）
+1. ツールバーの Link Fixer アイコンをクリックし、「設定を開く」を選ぶ（Chrome は `chrome://extensions`、Firefox はアドオンマネージャーから開くこともできます）
 2. 「ルールを追加」で行を増やし、正規表現と置換後の URL を入力する
 3. 「保存」を押す
 
@@ -75,6 +75,7 @@ npm run zip              # Chrome 向け zip
 npm run zip:firefox      # Firefox 向け zip
 npm run xpi              # Firefox 向け zip と xpi
 npm run typecheck        # 型チェック
+npm run icons:theme      # テーマ別アイコン PNG を手動生成（通常はビルド時に自動生成）
 ```
 
 `test/preview.html` をブラウザで開くと、サンプル入りの静的な見た目を確認できます（JS は動作しません）。
