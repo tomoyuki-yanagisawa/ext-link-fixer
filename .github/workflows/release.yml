@@ -47,32 +47,13 @@ jobs:
         run: npm run typecheck
 
       - if: steps.check.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
         run: |
           npm run zip
           npm run zip:firefox
-
-      - name: Sign Firefox build (unlisted)
-        if: steps.check.outputs.exists == 'false'
-        env:
-          VERSION: ${{ steps.version.outputs.value }}
-          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
-          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-        run: |
-          if [ -z "$AMO_JWT_ISSUER" ] || [ -z "$AMO_JWT_SECRET" ]; then
-            echo "::error::AMO_JWT_ISSUER / AMO_JWT_SECRET が未設定です。"
-            exit 1
-          fi
-
-          npx web-ext sign \
-            --channel=unlisted \
-            --source-dir=.output/firefox-mv3 \
-            --artifacts-dir=.output/signed \
-            --upload-source-code=".output/link-fixer-$VERSION-sources.zip" \
-            --api-key="$AMO_JWT_ISSUER" \
-            --api-secret="$AMO_JWT_SECRET"
-
-          # 署名済みの .xpi をリリース用の名前に揃える
-          cp .output/signed/*.xpi ".output/link-fixer-$VERSION-firefox.xpi"
+          # Developer Edition などで読み込みやすいよう、同じ内容を .xpi としても用意する
+          cp ".output/link-fixer-$VERSION-firefox.zip" ".output/link-fixer-$VERSION-firefox.xpi"
 
       - if: steps.check.outputs.exists == 'false'
         env:
