@@ -1,8 +1,7 @@
 import { browser } from 'wxt/browser';
-
-type DynamicRule = NonNullable<
-  Parameters<typeof browser.declarativeNetRequest.updateDynamicRules>[0]['addRules']
->[number];
+import { evaluateRules, formatOutcome, normalizeUrl } from './playground';
+import { hasHostAccess, requestHostAccess } from './permissions';
+import { loadSavedRules, toDynamicRules, verifyRegex } from './rules';
 
 function requiredElement<T extends Element>(root: ParentNode, selector: string): T {
   const element = root.querySelector<T>(selector);
@@ -21,8 +20,6 @@ const playgroundRunButton = requiredElement<HTMLButtonElement>(document, '#playg
 const playgroundResultEl = requiredElement<HTMLTextAreaElement>(document, '#playground-result');
 const permissionStatusEl = requiredElement<HTMLParagraphElement>(document, '#permission-status');
 const permissionRequestButton = requiredElement<HTMLButtonElement>(document, '#permission-request');
-
-const ORIGINS = ['http://*/*', 'https://*/*'];
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -121,17 +118,6 @@ async function loadRules() {
   }
 }
 
-async function verifyRegex(regex: string) {
-  try {
-    return await browser.declarativeNetRequest.isRegexSupported({
-      regex,
-      requireCapturing: true,
-    });
-  } catch (error) {
-    return { isSupported: false, reason: errorMessage(error) };
-  }
-}
-
 type RuleEntry = RowEntry & {
   line: number;
 };
@@ -174,19 +160,9 @@ async function saveRules() {
   setStatus('保存中…');
 
   try {
-    const addRules: DynamicRule[] = entries.map((entry, index) => ({
-      id: index + 1,
-      // 並び順が上のルールほど優先度を高くする。
-      priority: entries.length - index,
-      condition: {
-        regexFilter: entry.regex,
-        resourceTypes: ['main_frame'],
-      },
-      action: {
-        type: 'redirect',
-        redirect: { regexSubstitution: entry.substitution },
-      },
-    }));
+    const addRules = toDynamicRules(
+      entries.map(({ regex, substitution }) => ({ regex, substitution })),
+    );
 
     const existingRules = await browser.declarativeNetRequest.getDynamicRules();
     await browser.declarativeNetRequest.updateDynamicRules({
@@ -205,107 +181,6 @@ async function saveRules() {
   } finally {
     saveButton.disabled = false;
   }
-}
-
-type MatchingRule = {
-  id: number;
-  regex: string;
-  substitution: string;
-};
-
-type RuleOutcome = {
-  rule: MatchingRule;
-  matched: boolean;
-  applied: boolean;
-  /** 書き換え後の URL。マッチしていない、または計算できない場合は null。 */
-  result: string | null;
-};
-
-type NormalizedUrl = {
-  /** 実際のネットワークリクエストに近づけた URL。 */
-  url: string;
-  /** fragment が付いていたか。リクエストには含まれないため判定前に除去する。 */
-  hadFragment: boolean;
-};
-
-/**
- * DNR のマッチ対象に近づける。
- *
- * - ホストの punycode 化や非 ASCII 文字のパーセントエンコードは `URL` に任せる
- * - fragment はネットワークリクエストに含まれないため取り除く
- */
-function normalizeUrl(input: string): NormalizedUrl {
-  try {
-    const parsed = new URL(input);
-    const hadFragment = parsed.hash !== '';
-    parsed.hash = '';
-    return { url: parsed.href, hadFragment };
-  } catch {
-    return { url: input, hadFragment: false };
-  }
-}
-
-// DNR と同じく、最初にマッチした箇所だけを \0〜\9 の参照で置き換える。
-function substituteFirstMatch(
-  url: string,
-  match: RegExpExecArray,
-  substitution: string,
-) {
-  const replaced = substitution.replace(
-    /\\(\d)/g,
-    (_, digit: string) => match[Number(digit)] ?? '',
-  );
-
-  return url.slice(0, match.index) + replaced + url.slice(match.index + match[0].length);
-}
-
-/**
- * URL に対してルールを評価する。rules は優先度の高い順に並べて渡す。
- *
- * DNR の `regexFilter` は既定で大文字小文字を区別しないため、`i` フラグで
- * 同じ挙動にしている。保存時に `isRegexSupported` で検証したルールが対象。
- */
-function evaluateRules(url: string, rules: MatchingRule[]): RuleOutcome[] {
-  let applied = false;
-
-  return rules.map((rule) => {
-    let match: RegExpExecArray | null;
-    try {
-      match = new RegExp(rule.regex, 'i').exec(url);
-    } catch {
-      match = null;
-    }
-
-    if (!match) {
-      return { rule, matched: false, applied: false, result: null };
-    }
-
-    const result = substituteFirstMatch(url, match, rule.substitution);
-    const isApplied = !applied;
-    if (isApplied) {
-      applied = true;
-    }
-
-    return { rule, matched: true, applied: isApplied, result };
-  });
-}
-
-type SavedRule = MatchingRule & {
-  priority: number;
-};
-
-async function loadSavedRules(): Promise<SavedRule[]> {
-  const rules = await browser.declarativeNetRequest.getDynamicRules();
-
-  return rules
-    .map((rule) => ({
-      id: rule.id,
-      priority: rule.priority ?? 0,
-      regex: rule.condition?.regexFilter ?? '',
-      substitution: rule.action?.redirect?.regexSubstitution ?? '',
-    }))
-    .filter((rule) => rule.regex !== '' && rule.substitution !== '')
-    .sort((a, b) => b.priority - a.priority);
 }
 
 function showPlaygroundError(message: string) {
@@ -348,35 +223,7 @@ async function runPlayground() {
     }
 
     outcomes.forEach((outcome, index) => {
-      const label = `${index + 1} 行目`;
-
-      if (!outcome.matched) {
-        lines.push(`${label} マッチしない`);
-        return;
-      }
-
-      const status = outcome.applied
-        ? '適用'
-        : 'マッチ（優先度が低いため適用されない）';
-
-      if (outcome.result === null) {
-        lines.push(`${label} ${status}: （書き換え結果を計算できませんでした）`);
-        return;
-      }
-
-      let line = `${label} ${status}: ${outcome.result}`;
-
-      if (outcome.result === target.url) {
-        line += '（URL は変わりません）';
-      } else {
-        try {
-          new URL(outcome.result);
-        } catch {
-          line += '（有効な URL ではありません）';
-        }
-      }
-
-      lines.push(line);
+      lines.push(formatOutcome(outcome, index, target.url));
     });
 
     playgroundResultEl.value = lines.join('\n');
@@ -384,14 +231,6 @@ async function runPlayground() {
     showPlaygroundError(`シミュレーションに失敗しました: ${errorMessage(error)}`);
   } finally {
     playgroundRunButton.disabled = false;
-  }
-}
-
-async function hasHostAccess() {
-  try {
-    return await browser.permissions.contains({ origins: ORIGINS });
-  } catch {
-    return true;
   }
 }
 
@@ -414,7 +253,7 @@ permissionRequestButton.addEventListener('click', async () => {
   permissionRequestButton.disabled = true;
 
   try {
-    if (await browser.permissions.request({ origins: ORIGINS })) {
+    if (await requestHostAccess()) {
       setPermissionState(true);
       return;
     }
