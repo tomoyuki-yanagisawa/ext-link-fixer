@@ -188,8 +188,11 @@ npm run typecheck        # TypeScript の型チェック
 `.github/workflows/release.yml` が、`main` ブランチの `package.json` の更新を契機にビルドとリリースを行う。
 
 - `package.json` の `version` と同じ名前のタグ（`v0.1.0` など）のリリースが未作成の場合だけ実行する。バージョンを上げずに `package.json` を変更した場合は何もしない。
-- 型チェックの後、Chrome / Firefox 向けの zip を作成し、リリースに添付する。Firefox 用は同じ内容を `.xpi` としても添付する。
-- 署名は行わない。両ブラウザとも開発者モードでの読み込み、または一時的なインストールを想定する。未署名の `.xpi` は通常版 Firefox には常設インストールできないため、`about:debugging` からの一時的な読み込み、または署名検証を無効にした Nightly などで使う。
+- 型チェックの後、Chrome / Firefox 向けの zip を作成する。
+- Firefox 版は AMO の未掲載（unlisted）チャンネルで署名し、署名済み `.xpi` をリリースに添付する。署名には `AMO_JWT_ISSUER` と `AMO_JWT_SECRET` のリポジトリシークレットを使う（値は AMO の API キー画面で発行する）。
+- 署名済み `.xpi` は通常版 Firefox にそのままインストールできる。`about:debugging` での一時的な読み込みでも動作する。
+- 一度署名したバージョンは AMO 側に残るため、同じバージョンで再署名はできない。修正時はバージョンを上げる。
+- Chrome 版には署名がないため、開発者モードでの読み込みを想定する。
 - `workflow_dispatch` で手動実行もできる。
 
 ## 8. 動作確認
