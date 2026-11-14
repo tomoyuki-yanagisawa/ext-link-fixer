@@ -65,13 +65,17 @@ jobs:
           prev_tag=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
           if [ -n "$prev_tag" ]; then
             changelog="https://github.com/$GITHUB_REPOSITORY/compare/$prev_tag...v$VERSION"
+            commits=$(git log --no-merges --pretty='- %s' "$prev_tag..HEAD")
           else
             changelog="https://github.com/$GITHUB_REPOSITORY/commits/v$VERSION"
+            commits=$(git log --no-merges --pretty='- %s')
           fi
+
+          printf '%s\n\n**Full Changelog**: %s\n' "$commits" "$changelog" > release-notes.md
 
           gh release create "v$VERSION" \
             ".output/link-fixer-$VERSION-chrome.zip" \
             ".output/link-fixer-$VERSION-firefox.zip" \
             ".output/link-fixer-$VERSION-firefox.xpi" \
             --title "v$VERSION" \
-            --notes "**Full Changelog**: $changelog"
+            --notes-file release-notes.md
