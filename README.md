@@ -76,6 +76,8 @@ npm run zip:firefox      # Firefox 向け zip
 npm run typecheck        # 型チェック
 ```
 
+`test/preview.html` をブラウザで開くと、サンプル入りの静的な見た目を確認できます（JS は動作しません）。
+
 リリースは GitHub Actions で自動化されています。`main` の `package.json` の `version` を上げて push すると、ビルドと GitHub Release の作成が行われます。
 
 構成の詳細は [docs/DESIGN.v1.md](docs/DESIGN.v1.md) を参照してください。

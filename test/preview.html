@@ -1,0 +1,149 @@
+<!doctype html>
+<!-- entrypoints/options/index.html の見た目確認用。本体を変更したら同期する。 -->
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>Link Fixer — preview</title>
+    <link rel="stylesheet" href="../entrypoints/options/style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Link Fixer</h1>
+      <p class="hint">
+        URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
+      </p>
+
+      <hr />
+
+      <fieldset>
+        <legend>サイトアクセス</legend>
+        <p id="permission-status">
+          サイトアクセスが許可されていません。URL の書き換えには許可が必要です。
+        </p>
+        <button type="button" id="permission-request">
+          サイトアクセスを許可
+        </button>
+      </fieldset>
+
+      <hr />
+
+      <form onsubmit="return false">
+        <fieldset>
+          <legend>ルール</legend>
+
+          <p class="hint">
+            左の正規表現にマッチした URL を、右の URL に置き換えます。正規表現は DNR が受け付ける形式で指定してください。
+          </p>
+
+          <div id="rows">
+            <div class="rule-row">
+              <input
+                type="text"
+                class="regex"
+                aria-label="マッチする正規表現"
+               
+                value="^https://example\.com/old/(.*)$"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <input
+                type="text"
+                class="substitution"
+                aria-label="置換後の URL"
+               
+                value="https://example.com/new/\1"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <button type="button" class="remove">削除</button>
+            </div>
+
+            <div class="rule-row">
+              <input
+                type="text"
+                class="regex"
+                aria-label="マッチする正規表現"
+               
+                value="^https://example\.com/app\?_test=(.*)$"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <input
+                type="text"
+                class="substitution"
+                aria-label="置換後の URL"
+               
+                value="https://example.com/app?_ok=\1"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <button type="button" class="remove">削除</button>
+            </div>
+
+            <div class="rule-row">
+              <input
+                type="text"
+                class="regex"
+                aria-label="マッチする正規表現"
+               
+                placeholder="^https://example\.com/search\?q=(.*)$"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <input
+                type="text"
+                class="substitution"
+                aria-label="置換後の URL"
+               
+                placeholder="https://example.com/find?query=\1"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <button type="button" class="remove">削除</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="add">ルールを追加</button>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <p id="status" role="status">2 件のルールを保存しました。</p>
+          <button type="submit" id="save">保存</button>
+        </div>
+      </form>
+
+      <hr />
+
+      <fieldset>
+        <legend>Playground</legend>
+        <p class="hint">
+          保存済みのルールで URL がどう書き換わるかを試せます。DNR の条件（大文字小文字を区別しない、fragment は除外）に合わせて判定します。
+        </p>
+
+        <div class="playground-controls">
+          <input
+            type="text"
+            id="playground-url"
+            value="https://example.com/app?_test=a"
+            spellcheck="false"
+            autocomplete="off"
+            aria-label="試す URL"
+          />
+          <button type="button" id="playground-run">実行</button>
+        </div>
+
+        <div id="playground-result" role="status">
+          <ul>
+            <li>1 行目 マッチしない</li>
+            <li>
+              2 行目 適用:
+              <code>https://example.com/app?_ok=a</code>
+            </li>
+          </ul>
+        </div>
+      </fieldset>
+    </main>
+  </body>
+</html>

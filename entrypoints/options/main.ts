@@ -27,25 +27,20 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function setStatus(message: string, kind: '' | 'error' | 'ok' = '') {
-  statusEl.textContent = message;
-  statusEl.className = kind;
+function setStatus(message: string, isError = false) {
+  statusEl.textContent = isError ? `エラー: ${message}` : message;
 }
 
 function createRow(regex = '', substitution = '') {
   const row = document.createElement('div');
-  row.className = 'row';
+  row.className = 'rule-row';
   row.innerHTML = `
-    <div>
-      <label>マッチする正規表現</label>
-      <input type="text" class="regex" spellcheck="false" autocomplete="off"
-             placeholder="^https://example\\.com/old/(.*)$" />
-    </div>
-    <div>
-      <label>置換後の URL</label>
-      <input type="text" class="substitution" spellcheck="false" autocomplete="off"
-             placeholder="https://example.com/new/\\1" />
-    </div>
+    <input type="text" class="regex" aria-label="マッチする正規表現"
+           spellcheck="false" autocomplete="off"
+           placeholder="^https://example\\.com/search\\?q=(.*)$" />
+    <input type="text" class="substitution" aria-label="置換後の URL"
+           spellcheck="false" autocomplete="off"
+           placeholder="https://example.com/find?query=\\1" />
     <button type="button" class="remove">削除</button>
   `;
 
@@ -71,7 +66,7 @@ function appendRow(regex?: string, substitution?: string) {
 }
 
 function readRows() {
-  return Array.from(rowsEl.querySelectorAll('.row')).map((row) => ({
+  return Array.from(rowsEl.querySelectorAll('.rule-row')).map((row) => ({
     regex: requiredElement<HTMLInputElement>(row, '.regex').value,
     substitution: requiredElement<HTMLInputElement>(row, '.substitution').value,
   }));
@@ -105,7 +100,7 @@ async function loadRules() {
 
     setStatus('');
   } catch (error) {
-    setStatus(`ルールの読み込みに失敗しました: ${errorMessage(error)}`, 'error');
+    setStatus(`ルールの読み込みに失敗しました: ${errorMessage(error)}`, true);
     if (!rowsEl.children.length) {
       appendRow();
     }
@@ -126,7 +121,7 @@ async function verifyRegex(regex: string) {
 async function saveRules() {
   const rows = readRows();
   const entries = [];
-  const rowElements = Array.from(rowsEl.querySelectorAll('.row'));
+  const rowElements = Array.from(rowsEl.querySelectorAll('.rule-row'));
 
   for (const [index, row] of rows.entries()) {
     const regex = row.regex;
@@ -140,7 +135,7 @@ async function saveRules() {
     if (regexEmpty || substitutionEmpty) {
       setStatus(
         `${index + 1} 行目: 正規表現と置換後の URL の両方を入力してください。`,
-        'error',
+        true,
       );
       focusInput(rowElements[index], regexEmpty ? '.regex' : '.substitution');
       return;
@@ -154,7 +149,7 @@ async function saveRules() {
     if (!result.isSupported) {
       setStatus(
         `${entry.index + 1} 行目の正規表現がサポートされていません: ${result.reason ?? '理由不明'}`,
-        'error',
+        true,
       );
       focusInput(rowElements[entry.index], '.regex');
       return;
@@ -189,10 +184,9 @@ async function saveRules() {
       addRules.length
         ? `${addRules.length} 件のルールを保存しました。`
         : 'すべてのルールを削除しました。',
-      'ok',
     );
   } catch (error) {
-    setStatus(`保存に失敗しました: ${errorMessage(error)}`, 'error');
+    setStatus(`保存に失敗しました: ${errorMessage(error)}`, true);
   } finally {
     saveButton.disabled = false;
   }
@@ -306,8 +300,7 @@ function createCode(text: string) {
 }
 
 function showPlaygroundError(message: string) {
-  playgroundResultEl.className = 'error';
-  playgroundResultEl.replaceChildren(message);
+  playgroundResultEl.replaceChildren(`エラー: ${message}`);
 }
 
 async function runPlayground() {
@@ -319,7 +312,6 @@ async function runPlayground() {
   }
 
   playgroundRunButton.disabled = true;
-  playgroundResultEl.className = '';
 
   try {
     const rules = await loadSavedRules();
@@ -351,10 +343,7 @@ async function runPlayground() {
 
     outcomes.forEach((outcome, index) => {
       const item = document.createElement('li');
-      const label = document.createElement('span');
-      label.className = 'label';
-      label.textContent = `${index + 1} 行目`;
-      item.append(label, ' ');
+      item.append(`${index + 1} 行目 `);
 
       if (!outcome.matched) {
         item.append('マッチしない');
@@ -363,7 +352,6 @@ async function runPlayground() {
       }
 
       if (outcome.applied) {
-        item.classList.add('applied');
         item.append('適用');
       } else {
         item.append('マッチ（優先度が低いため適用されない）');
@@ -408,7 +396,6 @@ async function hasHostAccess() {
 
 function setPermissionState(granted: boolean) {
   permissionRequestButton.disabled = granted;
-  permissionStatusEl.className = granted ? 'ok' : 'error';
   permissionStatusEl.textContent = granted
     ? 'サイトアクセスは許可されています。'
     : 'サイトアクセスが許可されていません。URL の書き換えには許可が必要です。';
@@ -431,7 +418,6 @@ permissionRequestButton.addEventListener('click', async () => {
   }
 
   permissionRequestButton.disabled = false;
-  permissionStatusEl.className = 'error';
   permissionStatusEl.textContent =
     'サイトアクセスを許可できませんでした。ブラウザの拡張機能の設定から許可してください。';
 });

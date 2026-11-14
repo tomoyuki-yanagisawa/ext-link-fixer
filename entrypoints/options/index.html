@@ -4,261 +4,52 @@
     <meta charset="utf-8" />
     <meta name="manifest.open_in_tab" content="true" />
     <title>Link Fixer</title>
-    <style>
-      :root {
-        color-scheme: light dark;
-        --border: #c8c8c8;
-        --muted: #666;
-        --accent: #2563eb;
-        --error: #c02626;
-        --ok: #1a7f37;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      body {
-        margin: 0;
-        padding: 24px;
-        font: 14px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
-      }
-
-      main {
-        max-width: 900px;
-        margin: 0 auto;
-      }
-
-      h1 {
-        margin: 0 0 4px;
-        font-size: 20px;
-      }
-
-      .hint {
-        margin: 0 0 20px;
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .row {
-        display: grid;
-        grid-template-columns: 1fr 1fr auto;
-        gap: 8px;
-        align-items: start;
-        padding: 10px;
-        margin-bottom: 8px;
-        border: 1px solid var(--border);
-        border-radius: 6px;
-      }
-
-      .row label {
-        display: block;
-        margin-bottom: 4px;
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .row input {
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-        background: transparent;
-        color: inherit;
-      }
-
-      .row input:focus {
-        outline: 2px solid var(--accent);
-        outline-offset: -1px;
-      }
-
-      .remove {
-        margin-top: 20px;
-      }
-
-      button {
-        padding: 6px 12px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        background: transparent;
-        color: inherit;
-        font: inherit;
-        cursor: pointer;
-      }
-
-      button:hover:not(:disabled) {
-        background: rgba(127, 127, 127, 0.15);
-      }
-
-      button:disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-
-      button.primary {
-        border-color: var(--accent);
-        background: var(--accent);
-        color: #fff;
-      }
-
-      button.primary:hover:not(:disabled) {
-        background: #1d4ed8;
-      }
-
-      .actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 16px;
-      }
-
-      .actions .primary {
-        margin-left: auto;
-      }
-
-      #status {
-        min-height: 1.6em;
-        margin: 12px 0 0;
-        font-size: 13px;
-        white-space: pre-wrap;
-      }
-
-      #status.error {
-        color: var(--error);
-      }
-
-      #status.ok {
-        color: var(--ok);
-      }
-
-      .playground {
-        margin-top: 32px;
-        padding-top: 20px;
-        border-top: 1px solid var(--border);
-      }
-
-      .playground h2 {
-        margin: 0 0 4px;
-        font-size: 15px;
-      }
-
-      .playground-controls {
-        display: flex;
-        gap: 8px;
-      }
-
-      .playground input {
-        flex: 1;
-        min-width: 0;
-        padding: 6px 8px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-        background: transparent;
-        color: inherit;
-      }
-
-      .playground input:focus {
-        outline: 2px solid var(--accent);
-        outline-offset: -1px;
-      }
-
-      #playground-result {
-        min-height: 1.6em;
-        margin: 12px 0 0;
-        font-size: 13px;
-        overflow-wrap: anywhere;
-      }
-
-      #playground-result.error {
-        color: var(--error);
-      }
-
-      .notice {
-        margin: 0 0 20px;
-        padding: 12px 14px;
-        border: 1px solid var(--accent);
-        border-radius: 6px;
-        font-size: 13px;
-      }
-
-      #permission-status {
-        margin-bottom: 8px;
-      }
-
-      #permission-status.error {
-        color: var(--error);
-      }
-
-      #permission-status.ok {
-        color: var(--ok);
-      }
-
-      #playground-result.ok {
-        color: var(--ok);
-      }
-
-      #playground-result ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-
-      #playground-result li {
-        margin-bottom: 4px;
-        color: var(--muted);
-      }
-
-      #playground-result li.applied {
-        color: inherit;
-      }
-
-      #playground-result .label {
-        font-weight: 600;
-      }
-
-      #playground-result code {
-        font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
-        color: inherit;
-      }
-
-      @media (max-width: 640px) {
-        .row {
-          grid-template-columns: 1fr;
-        }
-
-        .remove {
-          margin-top: 0;
-          justify-self: start;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
     <main>
       <h1>Link Fixer</h1>
       <p class="hint">
-        上にあるルールほど優先されます。正規表現は拡張機能 API（DNR）が受け付ける形式で指定してください。空の行は保存されません。
+        URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
       </p>
 
-      <div class="notice">
+      <hr />
+
+      <fieldset>
+        <legend>サイトアクセス</legend>
         <p id="permission-status">サイトアクセスの状態を確認しています…</p>
-        <button type="button" id="permission-request" disabled>サイトアクセスを許可</button>
-      </div>
+        <button type="button" id="permission-request" disabled>
+          サイトアクセスを許可
+        </button>
+      </fieldset>
+
+      <hr />
 
       <form id="form">
-        <div id="rows"></div>
+        <fieldset>
+          <legend>ルール</legend>
+
+          <p class="hint">
+            左の正規表現にマッチした URL を、右の URL に置き換えます。正規表現は DNR が受け付ける形式で指定してください。
+          </p>
+
+          <div id="rows"></div>
+
+          <div class="actions">
+            <button type="button" id="add">ルールを追加</button>
+          </div>
+        </fieldset>
 
         <div class="actions">
-          <button type="button" id="add">ルールを追加</button>
-          <button type="submit" id="save" class="primary">保存</button>
+          <p id="status" role="status" aria-live="polite"></p>
+          <button type="submit" id="save">保存</button>
         </div>
       </form>
 
-      <p id="status" role="status" aria-live="polite"></p>
+      <hr />
 
-      <section class="playground">
-        <h2>Playground</h2>
+      <fieldset>
+        <legend>Playground</legend>
         <p class="hint">
           保存済みのルールで URL がどう書き換わるかを試せます。DNR の条件（大文字小文字を区別しない、fragment は除外）に合わせて判定します。
         </p>
@@ -276,7 +67,7 @@
         </div>
 
         <div id="playground-result" role="status" aria-live="polite"></div>
-      </section>
+      </fieldset>
     </main>
 
     <script type="module" src="./main.ts"></script>
