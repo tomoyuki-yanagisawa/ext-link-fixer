@@ -28,8 +28,8 @@ export default defineConfig({
             // Firefox の theme_icons は、dark が「濃い文字のテーマ（ライト）」、
             // light が「明るい文字のテーマ（ダーク）」用。
             theme_icons: [16, 32, 48, 128].map((size) => ({
-              dark: `theme-icons/light-${size}.png`,
-              light: `theme-icons/dark-${size}.png`,
+              dark: `theme-icons/icon-on-light-${size}.png`,
+              light: `theme-icons/icon-on-dark-${size}.png`,
               size,
             })),
           }
