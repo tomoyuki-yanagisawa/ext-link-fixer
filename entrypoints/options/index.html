@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="manifest.open_in_tab" content="true" />
+    <title>Link Fixer</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --border: #c8c8c8;
+        --muted: #666;
+        --accent: #2563eb;
+        --error: #c02626;
+        --ok: #1a7f37;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+        font: 14px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 20px;
+      }
+
+      .hint {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr auto;
+        gap: 8px;
+        align-items: start;
+        padding: 10px;
+        margin-bottom: 8px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+      }
+
+      .row label {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .row input {
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: transparent;
+        color: inherit;
+      }
+
+      .row input:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+      }
+
+      .remove {
+        margin-top: 20px;
+      }
+
+      button {
+        padding: 6px 12px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      button:hover:not(:disabled) {
+        background: rgba(127, 127, 127, 0.15);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+
+      button.primary:hover:not(:disabled) {
+        background: #1d4ed8;
+      }
+
+      .actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .actions .primary {
+        margin-left: auto;
+      }
+
+      #status {
+        min-height: 1.6em;
+        margin: 12px 0 0;
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+
+      #status.error {
+        color: var(--error);
+      }
+
+      #status.ok {
+        color: var(--ok);
+      }
+
+      @media (max-width: 640px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+
+        .remove {
+          margin-top: 0;
+          justify-self: start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Link Fixer</h1>
+      <p class="hint">
+        上にあるルールほど優先されます。正規表現は拡張機能 API（DNR）が受け付ける形式で指定してください。空の行は保存されません。
+      </p>
+
+      <form id="form">
+        <div id="rows"></div>
+
+        <div class="actions">
+          <button type="button" id="add">ルールを追加</button>
+          <button type="submit" id="save" class="primary">保存</button>
+        </div>
+      </form>
+
+      <p id="status" role="status" aria-live="polite"></p>
+    </main>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
