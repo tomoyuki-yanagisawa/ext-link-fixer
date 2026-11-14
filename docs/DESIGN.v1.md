@@ -30,22 +30,33 @@ link-fixer/
 ├── wxt.config.ts
 ├── assets/
 │   └── icon.svg
+├── public/
+│   └── _locales/
+│       ├── ja/
+│       │   └── messages.json
+│       └── en/
+│           └── messages.json
 ├── entrypoints/
 │   ├── options/
 │   │   ├── index.html
 │   │   ├── main.ts
+│   │   ├── playground.ts
+│   │   ├── permissions.ts
+│   │   ├── rules.ts
 │   │   └── style.css
 │   └── popup/
 │       ├── index.html
 │       ├── main.ts
 │       └── style.css
+├── utils/
+│   └── i18n-dom.ts
 └── test/
     └── preview.html
 ```
 
 スタイルは `entrypoints/options/style.css` に記述する。色・フォント・部品の見た目はブラウザ既定に任せ、レイアウトに必要な最小限だけを指定する。文字サイズ・余白は `rem` / `em` を使い、ブラウザの既定フォントサイズに追従させる。OS やブラウザで見た目が異なってよい。
 
-`test/preview.html` は、サンプル入りの静的なプレビュー。ブラウザで直接開いて見た目を確認するための開発用ファイルで、拡張機能には含まれない（JS は動作しない）。
+`test/preview.html` は、サンプル入りの静的なプレビュー。ブラウザで直接開いて見た目を確認するための開発用ファイルで、拡張機能には含まれない（JS は動作しない）。翻訳の対象外で、日本語の文言をそのまま持つ。
 
 `package-lock.json` は npm が生成し、依存関係を固定するため Git 管理する。`.output/`、`.wxt/`、`node_modules/` は Git 管理しない。
 
@@ -151,8 +162,11 @@ link-fixer/
 
 ```ts
 export default defineConfig({
+  modules: ['@wxt-dev/auto-icons'],
   manifest: {
-    name: 'Link Fixer',
+    name: '__MSG_extensionName__',
+    description: '__MSG_extensionDescription__',
+    default_locale: 'ja',
     permissions: ['declarativeNetRequest'],
     host_permissions: ['http://*/*', 'https://*/*'],
     browser_specific_settings: {
@@ -176,6 +190,16 @@ export default defineConfig({
 - 任意のサイトでのリダイレクトのために広いホスト権限を要求する。ユーザーへの権限警告は許容する。
 - DNR の redirect は対象 URL のホスト権限が必須で、権限がないとルールは静かに無視される。
 
+### 多言語対応（`browser.i18n`）
+
+- UI の文言はブラウザ標準の i18n で管理し、`public/_locales/ja/messages.json`（既定）と `public/_locales/en/messages.json` を手書きする。`manifest.default_locale` を `ja` にする。
+- manifest の `name` / `description` / `action.default_title` は `__MSG_extensionName__` などのプレースホルダーで指定する。
+- HTML の静的な文言は、要素に `data-i18n="key"`、属性に `data-i18n-aria-label="key"` などを付け、`utils/i18n-dom.ts` の `localize()` で置き換える。`<template>` の中は `document` の走査対象ではないため、複製前に `localize(template.content)` を呼ぶ。
+- 実行時に決まる文言は `browser.i18n.getMessage()` を包んだ `t()` を使い、置換は `$1`〜`$9` に文字列の配列で渡す。
+- メッセージ名は WXT が `public/_locales` から生成する型で検証される。HTML の `data-i18n` は文字列なので、型で守られるのはコード側の `t()` だけ。存在しないキーは `getMessage` が空文字を返す。
+- 表示言語はブラウザの UI 言語に従う。`browser.i18n` の仕様上、拡張機能内で言語を切り替える UI は持たない。`<html lang>` は `browser.i18n.getUILanguage()` の値に合わせる。
+- 翻訳の追加は `public/_locales/<lang>/messages.json` を増やすだけで、コードの変更は不要。
+
 ### `entrypoints/options/index.html`
 
 - 通常の HTML。`<meta name="manifest.open_in_tab" content="true">` で設定画面をタブ表示する。
@@ -189,7 +213,7 @@ export default defineConfig({
 - 検証：`browser.declarativeNetRequest.isRegexSupported()`。
 - 保存：`browser.declarativeNetRequest.updateDynamicRules()`。
 - UI 操作、入力値の検証、DNR への変換はシンプルな関数で実装する。
-- Playground のマッチ判定と置換も同じファイル内の関数で実装する。
+- Playground のマッチ判定と置換は `playground.ts` に、ルールの読み込み・検証・DNR への変換は `rules.ts` に、サイトアクセスは `permissions.ts` に分ける。`main.ts` は DOM の取得とイベント接続、保存の進行を担当する。
 
 ### `entrypoints/popup/`
 
