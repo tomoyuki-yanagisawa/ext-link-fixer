@@ -15,6 +15,7 @@ const rowsEl = requiredElement<HTMLDivElement>(document, '#rows');
 const statusEl = requiredElement<HTMLParagraphElement>(document, '#status');
 const addButton = requiredElement<HTMLButtonElement>(document, '#add');
 const saveButton = requiredElement<HTMLButtonElement>(document, '#save');
+const ruleTemplate = requiredElement<HTMLTemplateElement>(document, '#rule-template');
 const playgroundUrlEl = requiredElement<HTMLInputElement>(document, '#playground-url');
 const playgroundRunButton = requiredElement<HTMLButtonElement>(document, '#playground-run');
 const playgroundResultEl = requiredElement<HTMLTextAreaElement>(document, '#playground-result');
@@ -32,17 +33,10 @@ function setStatus(message: string, isError = false) {
 }
 
 function createRow(regex = '', substitution = '') {
-  const row = document.createElement('div');
-  row.className = 'rule-row';
-  row.innerHTML = `
-    <input type="text" class="regex" aria-label="マッチする正規表現"
-           spellcheck="false" autocomplete="off"
-           placeholder="^https://example\\.com/search\\?q=(.*)$" />
-    <input type="text" class="substitution" aria-label="置換後の URL"
-           spellcheck="false" autocomplete="off"
-           placeholder="https://example.com/find?query=\\1" />
-    <button type="button" class="remove">削除</button>
-  `;
+  const row = ruleTemplate.content.firstElementChild?.cloneNode(true);
+  if (!(row instanceof HTMLDivElement)) {
+    throw new Error('Rule template is missing');
+  }
 
   requiredElement<HTMLInputElement>(row, '.regex').value = regex;
   requiredElement<HTMLInputElement>(row, '.substitution').value = substitution;
