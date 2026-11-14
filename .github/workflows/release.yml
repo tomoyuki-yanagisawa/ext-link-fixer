@@ -49,13 +49,9 @@ jobs:
         run: npm run typecheck
 
       - if: steps.check.outputs.exists == 'false'
-        env:
-          VERSION: ${{ steps.version.outputs.value }}
         run: |
           npm run zip
-          npm run zip:firefox
-          # Developer Edition などで読み込みやすいよう、同じ内容を .xpi としても用意する
-          cp ".output/link-fixer-$VERSION-firefox.zip" ".output/link-fixer-$VERSION-firefox.xpi"
+          npm run xpi
 
       - if: steps.check.outputs.exists == 'false'
         env:
