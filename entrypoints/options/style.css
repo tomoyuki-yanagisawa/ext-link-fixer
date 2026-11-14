@@ -1,0 +1,157 @@
+:root {
+  color-scheme: light dark;
+  --border: color-mix(in srgb, CanvasText 20%, transparent);
+  --muted: GrayText;
+  --control-height: 2.25em;
+}
+
+body {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 1.25rem 1rem;
+  font-family: system-ui, sans-serif;
+  font-size: 0.875rem;
+}
+
+h1 {
+  margin: 0 0 0.9em;
+  font-size: 1.5em;
+}
+
+p {
+  margin: 0 0 0.9em;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+hr {
+  margin: 1.5em 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+fieldset {
+  margin: 0;
+  padding: 0.6em 0.9em;
+  border: 1px solid var(--border);
+  border-radius: 0.5em;
+}
+
+legend {
+  padding: 0 0.4em;
+  font-weight: 600;
+}
+
+input[type="text"] {
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--control-height);
+  font: inherit;
+  padding: 0 0.7em;
+  border: 1px solid var(--border);
+  border-radius: 0.45em;
+  background: Field;
+  color: FieldText;
+}
+
+.regex {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+::placeholder {
+  color: var(--muted);
+}
+
+button {
+  box-sizing: border-box;
+  height: var(--control-height);
+  font: inherit;
+  padding: 0 1.3em;
+  border: 1px solid var(--border);
+  border-radius: 0.45em;
+  background: ButtonFace;
+  color: ButtonText;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  background: color-mix(in srgb, ButtonText 6%, ButtonFace);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button[type="submit"] {
+  border-color: transparent;
+  background: Highlight;
+  background: AccentColor;
+  color: HighlightText;
+  color: AccentColorText;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background: color-mix(in srgb, CanvasText 12%, Highlight);
+  background: color-mix(in srgb, CanvasText 12%, AccentColor);
+}
+
+.actions,
+.playground-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.actions {
+  margin-top: 0.6em;
+}
+
+#status {
+  margin: 0;
+}
+
+.actions button[type="submit"] {
+  margin-left: auto;
+}
+
+.playground-controls {
+  margin-bottom: 0.9em;
+}
+
+.playground-controls input {
+  flex: 1 1 20em;
+}
+
+ul {
+  margin: 0.6em 0;
+  padding-left: 1.7em;
+}
+
+#playground-result {
+  overflow-wrap: anywhere;
+}
+
+.rule-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.6em;
+  align-items: center;
+}
+
+.rule-row + .rule-row {
+  margin-top: 0.7em;
+}
+
+@media (max-width: 40rem) {
+  .rule-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rule-row .remove {
+    justify-self: start;
+  }
+}
