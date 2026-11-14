@@ -19,6 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v7
         with:
@@ -60,9 +62,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.value }}
         run: |
+          prev_tag=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          if [ -n "$prev_tag" ]; then
+            changelog="https://github.com/$GITHUB_REPOSITORY/compare/$prev_tag...v$VERSION"
+          else
+            changelog="https://github.com/$GITHUB_REPOSITORY/commits/v$VERSION"
+          fi
+
           gh release create "v$VERSION" \
             ".output/link-fixer-$VERSION-chrome.zip" \
             ".output/link-fixer-$VERSION-firefox.zip" \
             ".output/link-fixer-$VERSION-firefox.xpi" \
             --title "v$VERSION" \
-            --generate-notes
+            --notes "**Full Changelog**: $changelog"
