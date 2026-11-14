@@ -7,25 +7,23 @@
     <link rel="stylesheet" href="../entrypoints/options/style.css" />
   </head>
   <body>
-    <main>
+    <header>
       <h1>Link Fixer</h1>
       <p class="hint">
         URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
       </p>
+    </header>
 
-      <hr />
-
+    <main>
       <fieldset>
         <legend>サイトアクセス</legend>
-        <p id="permission-status">
+        <p id="permission-status" class="status error">
           サイトアクセスが許可されていません。URL の書き換えには許可が必要です。
         </p>
         <button type="button" id="permission-request">
           サイトアクセスを許可
         </button>
       </fieldset>
-
-      <hr />
 
       <form onsubmit="return false">
         <fieldset>
@@ -41,7 +39,6 @@
                 type="text"
                 class="regex"
                 aria-label="マッチする正規表現"
-               
                 value="^https://example\.com/old/(.*)$"
                 spellcheck="false"
                 autocomplete="off"
@@ -50,7 +47,6 @@
                 type="text"
                 class="substitution"
                 aria-label="置換後の URL"
-               
                 value="https://example.com/new/\1"
                 spellcheck="false"
                 autocomplete="off"
@@ -63,7 +59,6 @@
                 type="text"
                 class="regex"
                 aria-label="マッチする正規表現"
-               
                 value="^https://example\.com/app\?_test=(.*)$"
                 spellcheck="false"
                 autocomplete="off"
@@ -72,7 +67,6 @@
                 type="text"
                 class="substitution"
                 aria-label="置換後の URL"
-               
                 value="https://example.com/app?_ok=\1"
                 spellcheck="false"
                 autocomplete="off"
@@ -85,7 +79,6 @@
                 type="text"
                 class="regex"
                 aria-label="マッチする正規表現"
-               
                 placeholder="^https://example\.com/search\?q=(.*)$"
                 spellcheck="false"
                 autocomplete="off"
@@ -94,7 +87,6 @@
                 type="text"
                 class="substitution"
                 aria-label="置換後の URL"
-               
                 placeholder="https://example.com/find?query=\1"
                 spellcheck="false"
                 autocomplete="off"
@@ -109,12 +101,10 @@
         </fieldset>
 
         <div class="actions">
-          <p id="status" role="status">2 件のルールを保存しました。</p>
+          <p id="status" class="status success" role="status">2 件のルールを保存しました。</p>
           <button type="submit" id="save">保存</button>
         </div>
       </form>
-
-      <hr />
 
       <fieldset>
         <legend>Playground</legend>

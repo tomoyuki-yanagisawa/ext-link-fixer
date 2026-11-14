@@ -9,23 +9,21 @@
     <link rel="icon" href="/icons/32.png" sizes="32x32" />
   </head>
   <body>
-    <main>
+    <header>
       <h1>Link Fixer</h1>
       <p class="hint">
         URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
       </p>
+    </header>
 
-      <hr />
-
+    <main>
       <fieldset>
         <legend>サイトアクセス</legend>
-        <p id="permission-status">サイトアクセスの状態を確認しています…</p>
+        <p id="permission-status" class="status">サイトアクセスの状態を確認しています…</p>
         <button type="button" id="permission-request" disabled>
           サイトアクセスを許可
         </button>
       </fieldset>
-
-      <hr />
 
       <form id="form">
         <fieldset>
@@ -65,12 +63,10 @@
         </fieldset>
 
         <div class="actions">
-          <p id="status" role="status" aria-live="polite"></p>
+          <p id="status" class="status" role="status" aria-live="polite"></p>
           <button type="submit" id="save">保存</button>
         </div>
       </form>
-
-      <hr />
 
       <fieldset>
         <legend>Playground</legend>

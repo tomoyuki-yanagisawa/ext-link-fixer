@@ -28,8 +28,9 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function setStatus(message: string, isError = false) {
-  statusEl.textContent = isError ? `エラー: ${message}` : message;
+function setStatus(message: string, kind: '' | 'error' | 'success' = '') {
+  statusEl.className = kind ? `status ${kind}` : 'status';
+  statusEl.textContent = message;
 }
 
 function createRow(regex = '', substitution = '') {
@@ -94,7 +95,7 @@ async function loadRules() {
 
     setStatus('');
   } catch (error) {
-    setStatus(`ルールの読み込みに失敗しました: ${errorMessage(error)}`, true);
+    setStatus(`ルールの読み込みに失敗しました: ${errorMessage(error)}`, 'error');
     if (!rowsEl.children.length) {
       appendRow();
     }
@@ -129,7 +130,7 @@ async function saveRules() {
     if (regexEmpty || substitutionEmpty) {
       setStatus(
         `${index + 1} 行目: 正規表現と置換後の URL の両方を入力してください。`,
-        true,
+        'error',
       );
       focusInput(rowElements[index], regexEmpty ? '.regex' : '.substitution');
       return;
@@ -143,7 +144,7 @@ async function saveRules() {
     if (!result.isSupported) {
       setStatus(
         `${entry.index + 1} 行目の正規表現がサポートされていません: ${result.reason ?? '理由不明'}`,
-        true,
+        'error',
       );
       focusInput(rowElements[entry.index], '.regex');
       return;
@@ -178,9 +179,10 @@ async function saveRules() {
       addRules.length
         ? `${addRules.length} 件のルールを保存しました。`
         : 'すべてのルールを削除しました。',
+      'success',
     );
   } catch (error) {
-    setStatus(`保存に失敗しました: ${errorMessage(error)}`, true);
+    setStatus(`保存に失敗しました: ${errorMessage(error)}`, 'error');
   } finally {
     saveButton.disabled = false;
   }
@@ -288,6 +290,7 @@ async function loadSavedRules(): Promise<SavedRule[]> {
 }
 
 function showPlaygroundError(message: string) {
+  playgroundResultEl.className = 'error';
   playgroundResultEl.value = `エラー: ${message}`;
 }
 
@@ -300,6 +303,7 @@ async function runPlayground() {
   }
 
   playgroundRunButton.disabled = true;
+  playgroundResultEl.className = '';
 
   try {
     const rules = await loadSavedRules();
@@ -374,6 +378,7 @@ async function hasHostAccess() {
 
 function setPermissionState(granted: boolean) {
   permissionRequestButton.disabled = granted;
+  permissionStatusEl.className = granted ? 'status success' : 'status error';
   permissionStatusEl.textContent = granted
     ? 'サイトアクセスは許可されています。'
     : 'サイトアクセスが許可されていません。URL の書き換えには許可が必要です。';
@@ -396,6 +401,7 @@ permissionRequestButton.addEventListener('click', async () => {
   }
 
   permissionRequestButton.disabled = false;
+  permissionStatusEl.className = 'status error';
   permissionStatusEl.textContent =
     'サイトアクセスを許可できませんでした。ブラウザの拡張機能の設定から許可してください。';
 });
