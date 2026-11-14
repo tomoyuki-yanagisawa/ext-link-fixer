@@ -28,9 +28,19 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function setStatus(message: string, kind: '' | 'error' | 'success' = '') {
-  statusEl.className = kind ? `status ${kind}` : 'status';
-  statusEl.textContent = message;
+type StatusKind = '' | 'error' | 'success';
+
+function setStatusText(
+  element: HTMLElement,
+  message: string,
+  kind: StatusKind = '',
+) {
+  element.className = kind ? `status ${kind}` : 'status';
+  element.textContent = message;
+}
+
+function setStatus(message: string, kind: StatusKind = '') {
+  setStatusText(statusEl, message, kind);
 }
 
 function createRow(regex = '', substitution = '') {
@@ -60,8 +70,17 @@ function appendRow(regex?: string, substitution?: string) {
   return row;
 }
 
-function readRows() {
-  return Array.from(rowsEl.querySelectorAll('.rule-row')).map((row) => ({
+type RowEntry = {
+  row: HTMLDivElement;
+  regex: string;
+  substitution: string;
+};
+
+function readRows(): RowEntry[] {
+  return Array.from(
+    rowsEl.querySelectorAll<HTMLDivElement>('.rule-row'),
+  ).map((row) => ({
+    row,
     regex: requiredElement<HTMLInputElement>(row, '.regex').value,
     substitution: requiredElement<HTMLInputElement>(row, '.substitution').value,
   }));
@@ -113,16 +132,16 @@ async function verifyRegex(regex: string) {
   }
 }
 
-async function saveRules() {
-  const rows = readRows();
-  const entries = [];
-  const rowElements = Array.from(rowsEl.querySelectorAll('.rule-row'));
+type RuleEntry = RowEntry & {
+  line: number;
+};
 
-  for (const [index, row] of rows.entries()) {
-    const regex = row.regex;
-    const substitution = row.substitution;
-    const regexEmpty = regex.trim() === '';
-    const substitutionEmpty = substitution.trim() === '';
+async function saveRules() {
+  const entries: RuleEntry[] = [];
+
+  for (const [index, row] of readRows().entries()) {
+    const regexEmpty = row.regex.trim() === '';
+    const substitutionEmpty = row.substitution.trim() === '';
 
     if (regexEmpty && substitutionEmpty) {
       continue;
@@ -132,21 +151,21 @@ async function saveRules() {
         `${index + 1} 行目: 正規表現と置換後の URL の両方を入力してください。`,
         'error',
       );
-      focusInput(rowElements[index], regexEmpty ? '.regex' : '.substitution');
+      focusInput(row.row, regexEmpty ? '.regex' : '.substitution');
       return;
     }
 
-    entries.push({ regex, substitution, index });
+    entries.push({ ...row, line: index + 1 });
   }
 
   for (const entry of entries) {
     const result = await verifyRegex(entry.regex);
     if (!result.isSupported) {
       setStatus(
-        `${entry.index + 1} 行目の正規表現がサポートされていません: ${result.reason ?? '理由不明'}`,
+        `${entry.line} 行目の正規表現がサポートされていません: ${result.reason ?? '理由不明'}`,
         'error',
       );
-      focusInput(rowElements[entry.index], '.regex');
+      focusInput(entry.row, '.regex');
       return;
     }
   }
@@ -378,10 +397,13 @@ async function hasHostAccess() {
 
 function setPermissionState(granted: boolean) {
   permissionRequestButton.disabled = granted;
-  permissionStatusEl.className = granted ? 'status success' : 'status error';
-  permissionStatusEl.textContent = granted
-    ? 'サイトアクセスは許可されています。'
-    : 'サイトアクセスが許可されていません。URL の書き換えには許可が必要です。';
+  setStatusText(
+    permissionStatusEl,
+    granted
+      ? 'サイトアクセスは許可されています。'
+      : 'サイトアクセスが許可されていません。URL の書き換えには許可が必要です。',
+    granted ? 'success' : 'error',
+  );
 }
 
 async function updatePermissionState() {
@@ -401,9 +423,11 @@ permissionRequestButton.addEventListener('click', async () => {
   }
 
   permissionRequestButton.disabled = false;
-  permissionStatusEl.className = 'status error';
-  permissionStatusEl.textContent =
-    'サイトアクセスを許可できませんでした。ブラウザの拡張機能の設定から許可してください。';
+  setStatusText(
+    permissionStatusEl,
+    'サイトアクセスを許可できませんでした。ブラウザの拡張機能の設定から許可してください。',
+    'error',
+  );
 });
 
 addButton.addEventListener('click', () => {
