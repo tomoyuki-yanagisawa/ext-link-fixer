@@ -1,0 +1,140 @@
+{
+  "extensionName": {
+    "message": "Link Fixer"
+  },
+  "extensionDescription": {
+    "message": "Rewrite URLs with regular expression rules. Redirects happen before the page loads."
+  },
+  "options_title": {
+    "message": "Link Fixer"
+  },
+  "options_lead": {
+    "message": "Register rules that rewrite URLs. They are evaluated from top to bottom, and the first matching rule is applied."
+  },
+  "options_siteAccess_legend": {
+    "message": "Site access"
+  },
+  "options_siteAccess_checking": {
+    "message": "Checking site access…"
+  },
+  "options_siteAccess_request": {
+    "message": "Allow site access"
+  },
+  "options_siteAccess_granted": {
+    "message": "Site access is allowed."
+  },
+  "options_siteAccess_denied": {
+    "message": "Site access is not allowed. Allowing it is required to rewrite URLs."
+  },
+  "options_siteAccess_failed": {
+    "message": "Could not allow site access. Allow it from the extension settings in your browser."
+  },
+  "options_rules_legend": {
+    "message": "Rules"
+  },
+  "options_rules_hint": {
+    "message": "URLs matching the regular expression on the left are replaced with the URL on the right. Use the regular expression syntax accepted by DNR."
+  },
+  "options_rules_regexLabel": {
+    "message": "Matching regular expression"
+  },
+  "options_rules_substitutionLabel": {
+    "message": "Replacement URL"
+  },
+  "options_rules_remove": {
+    "message": "Remove"
+  },
+  "options_rules_add": {
+    "message": "Add rule"
+  },
+  "options_rules_save": {
+    "message": "Save"
+  },
+  "options_rules_loading": {
+    "message": "Loading…"
+  },
+  "options_rules_loadFailed": {
+    "message": "Could not load the rules: $1"
+  },
+  "options_rules_bothRequired": {
+    "message": "Line $1: enter both the regular expression and the replacement URL."
+  },
+  "options_rules_unsupported": {
+    "message": "The regular expression on line $1 is not supported: $2"
+  },
+  "options_rules_unknownReason": {
+    "message": "unknown reason"
+  },
+  "options_rules_saving": {
+    "message": "Saving…"
+  },
+  "options_rules_saved": {
+    "message": "Saved rules: $1"
+  },
+  "options_rules_cleared": {
+    "message": "All rules were removed."
+  },
+  "options_rules_saveFailed": {
+    "message": "Could not save: $1"
+  },
+  "options_playground_legend": {
+    "message": "Playground"
+  },
+  "options_playground_hint": {
+    "message": "Try how the saved rules rewrite a URL. Matching follows the DNR conditions (case-insensitive, fragments excluded)."
+  },
+  "options_playground_urlLabel": {
+    "message": "URL to test"
+  },
+  "options_playground_run": {
+    "message": "Run"
+  },
+  "options_playground_resultLabel": {
+    "message": "Playground result"
+  },
+  "options_playground_urlRequired": {
+    "message": "Enter a URL to test."
+  },
+  "options_playground_empty": {
+    "message": "There are no saved rules."
+  },
+  "options_playground_fragmentIgnored": {
+    "message": "Text after # is not part of the network request, so it is excluded from matching."
+  },
+  "options_playground_noMatch": {
+    "message": "No rule matched."
+  },
+  "options_playground_lineMiss": {
+    "message": "Line $1: no match"
+  },
+  "options_playground_lineResult": {
+    "message": "Line $1: $2: $3"
+  },
+  "options_playground_statusApplied": {
+    "message": "applied"
+  },
+  "options_playground_statusNotApplied": {
+    "message": "matched but not applied (lower priority)"
+  },
+  "options_playground_uncomputable": {
+    "message": "(could not compute the rewritten URL)"
+  },
+  "options_playground_unchanged": {
+    "message": "(URL is unchanged)"
+  },
+  "options_playground_invalidUrl": {
+    "message": "(not a valid URL)"
+  },
+  "options_playground_error": {
+    "message": "Error: $1"
+  },
+  "options_playground_failed": {
+    "message": "Simulation failed: $1"
+  },
+  "popup_description": {
+    "message": "Rewrite URLs with your saved rules."
+  },
+  "popup_openOptions": {
+    "message": "Open settings"
+  }
+}
