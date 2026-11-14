@@ -15,7 +15,7 @@ body {
   max-width: 55rem;
   margin: 0 auto;
   padding: 1.5rem;
-  background: color-mix(in srgb, CanvasText 4%, Canvas);
+  background: color-mix(in srgb, CanvasText 2%, Canvas);
   color: CanvasText;
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 0.867rem; /* Firefox の in-content の small と同じ比率 */
@@ -154,7 +154,7 @@ button {
   }
 
   fieldset {
-    background: color-mix(in srgb, CanvasText 5%, Canvas);
+    background: color-mix(in srgb, CanvasText 4%, Canvas);
   }
 }
 
