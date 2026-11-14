@@ -131,6 +131,77 @@
         color: var(--ok);
       }
 
+      .playground {
+        margin-top: 32px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+      }
+
+      .playground h2 {
+        margin: 0 0 4px;
+        font-size: 15px;
+      }
+
+      .playground-controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      .playground input {
+        flex: 1;
+        min-width: 0;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: transparent;
+        color: inherit;
+      }
+
+      .playground input:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: -1px;
+      }
+
+      #playground-result {
+        min-height: 1.6em;
+        margin: 12px 0 0;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+
+      #playground-result.error {
+        color: var(--error);
+      }
+
+      #playground-result.ok {
+        color: var(--ok);
+      }
+
+      #playground-result ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      #playground-result li {
+        margin-bottom: 4px;
+        color: var(--muted);
+      }
+
+      #playground-result li.applied {
+        color: inherit;
+      }
+
+      #playground-result .label {
+        font-weight: 600;
+      }
+
+      #playground-result code {
+        font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        color: inherit;
+      }
+
       @media (max-width: 640px) {
         .row {
           grid-template-columns: 1fr;
@@ -160,6 +231,27 @@
       </form>
 
       <p id="status" role="status" aria-live="polite"></p>
+
+      <section class="playground">
+        <h2>Playground</h2>
+        <p class="hint">
+          保存済みのルールで URL がどう書き換わるかを試せます。DNR の条件（大文字小文字を区別しない、fragment は除外）に合わせて判定します。
+        </p>
+
+        <div class="playground-controls">
+          <input
+            type="text"
+            id="playground-url"
+            spellcheck="false"
+            autocomplete="off"
+            placeholder="https://example.com/old/123"
+            aria-label="試す URL"
+          />
+          <button type="button" id="playground-run">実行</button>
+        </div>
+
+        <div id="playground-result" role="status" aria-live="polite"></div>
+      </section>
     </main>
 
     <script type="module" src="./main.ts"></script>

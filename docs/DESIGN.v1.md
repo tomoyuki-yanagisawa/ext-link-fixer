@@ -52,7 +52,9 @@ link-fixer/
 - 起動時に `getDynamicRules()` から既存のルールを読み込み、表示する。
 - ルールの並び順で優先順位を決める（**上が優先**）。初版では並べ替え UI は設けない。
 - 保存成功・失敗は画面内に短く表示する。
-- 名称、有効/無効スイッチ、テスト画面、インポート/エクスポートは初版の対象外。
+- 画面下部に Playground を置く。URL を入力して実行すると、**保存済みのルールすべて**についてマッチするかと書き換え結果を表示し、実際に適用されるルール（優先度が最も高いもの）を明示する。
+- Playground は DNR のマッチ条件に合わせる。`regexFilter` は既定で大文字小文字を区別しないため `i` フラグで判定し、URL は `URL` で正規化する。fragment（`#` 以降）はネットワークリクエストに含まれないため判定から除外し、その旨を表示する。
+- 名称、有効/無効スイッチ、インポート/エクスポートは初版の対象外。
 
 ### 正規表現・置換
 
@@ -168,7 +170,8 @@ export default defineConfig({
 - 読み込み：`browser.declarativeNetRequest.getDynamicRules()`。
 - 検証：`browser.declarativeNetRequest.isRegexSupported()`。
 - 保存：`browser.declarativeNetRequest.updateDynamicRules()`。
-- UI 操作、入力値の検証、DNR への変換は同一ファイル内のシンプルな関数で実装する。
+- UI 操作、入力値の検証、DNR への変換はシンプルな関数で実装する。
+- Playground のマッチ判定と置換も同じファイル内の関数で実装する。
 
 ## 7. 開発・ビルド
 
