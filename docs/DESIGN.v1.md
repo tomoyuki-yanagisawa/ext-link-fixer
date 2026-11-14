@@ -188,8 +188,8 @@ npm run typecheck        # TypeScript の型チェック
 `.github/workflows/release.yml` が、`main` ブランチの `package.json` の更新を契機にビルドとリリースを行う。
 
 - `package.json` の `version` と同じ名前のタグ（`v0.1.0` など）のリリースが未作成の場合だけ実行する。バージョンを上げずに `package.json` を変更した場合は何もしない。
-- 型チェックの後、Chrome / Firefox 向けの zip を作成し、リリースに添付する。
-- 署名は行わない。両ブラウザとも開発者モードでの読み込み、または一時的なインストールを想定する。
+- 型チェックの後、Chrome / Firefox 向けの zip を作成し、リリースに添付する。Firefox 用は同じ内容を `.xpi` としても添付する。
+- 署名は行わない。両ブラウザとも開発者モードでの読み込み、または一時的なインストールを想定する。未署名の `.xpi` は通常版 Firefox には常設インストールできないため、`about:debugging` からの一時的な読み込み、または署名検証を無効にした Nightly などで使う。
 - `workflow_dispatch` で手動実行もできる。
 
 ## 8. 動作確認

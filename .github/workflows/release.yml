@@ -47,9 +47,13 @@ jobs:
         run: npm run typecheck
 
       - if: steps.check.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
         run: |
           npm run zip
           npm run zip:firefox
+          # Firefox は .xpi の方がインストールしやすいので、同じ内容を拡張子違いで用意する
+          cp ".output/link-fixer-$VERSION-firefox.zip" ".output/link-fixer-$VERSION-firefox.xpi"
 
       - if: steps.check.outputs.exists == 'false'
         env:
@@ -59,5 +63,6 @@ jobs:
           gh release create "v$VERSION" \
             ".output/link-fixer-$VERSION-chrome.zip" \
             ".output/link-fixer-$VERSION-firefox.zip" \
+            ".output/link-fixer-$VERSION-firefox.xpi" \
             --title "v$VERSION" \
             --generate-notes
