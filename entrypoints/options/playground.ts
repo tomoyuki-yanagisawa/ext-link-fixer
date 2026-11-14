@@ -1,3 +1,5 @@
+import { t } from '@/utils/i18n-dom';
+
 export type MatchingRule = {
   id: number;
   regex: string;
@@ -87,31 +89,38 @@ export function formatOutcome(
   index: number,
   targetUrl: string,
 ): string {
-  const label = `${index + 1} 行目`;
+  const line = index + 1;
 
   if (!outcome.matched) {
-    return `${label} マッチしない`;
+    return t('options_playground_lineMiss', [String(line)]);
   }
 
-  const status = outcome.applied
-    ? '適用'
-    : 'マッチ（優先度が低いため適用されない）';
+  const status = t(
+    outcome.applied
+      ? 'options_playground_statusApplied'
+      : 'options_playground_statusNotApplied',
+  );
+
+  const url =
+    outcome.result === null
+      ? t('options_playground_uncomputable')
+      : outcome.result;
+
+  const text = t('options_playground_lineResult', [String(line), status, url]);
 
   if (outcome.result === null) {
-    return `${label} ${status}: （書き換え結果を計算できませんでした）`;
+    return text;
   }
-
-  let line = `${label} ${status}: ${outcome.result}`;
 
   if (outcome.result === targetUrl) {
-    line += '（URL は変わりません）';
-  } else {
-    try {
-      new URL(outcome.result);
-    } catch {
-      line += '（有効な URL ではありません）';
-    }
+    return text + t('options_playground_unchanged');
   }
 
-  return line;
+  try {
+    new URL(outcome.result);
+  } catch {
+    return text + t('options_playground_invalidUrl');
+  }
+
+  return text;
 }
