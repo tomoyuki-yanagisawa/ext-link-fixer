@@ -3,33 +3,44 @@
   <head>
     <meta charset="utf-8" />
     <meta name="manifest.open_in_tab" content="true" />
-    <title>Link Fixer</title>
+    <title data-i18n="options.title">Link Fixer</title>
     <link rel="stylesheet" href="./style.css" />
     <link rel="icon" href="/icons/16.png" sizes="16x16" />
     <link rel="icon" href="/icons/32.png" sizes="32x32" />
   </head>
   <body>
     <header>
-      <h1>Link Fixer</h1>
-      <p class="hint">
+      <h1 data-i18n="extensionName">Link Fixer</h1>
+      <p class="hint" data-i18n="options.lead">
         URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
       </p>
     </header>
 
     <main>
       <fieldset>
-        <legend>サイトアクセス</legend>
-        <p id="permission-status" class="status">サイトアクセスの状態を確認しています…</p>
-        <button type="button" id="permission-request" disabled>
+        <legend data-i18n="options.siteAccess.legend">サイトアクセス</legend>
+        <p
+          id="permission-status"
+          class="status"
+          data-i18n="options.siteAccess.checking"
+        >
+          サイトアクセスの状態を確認しています…
+        </p>
+        <button
+          type="button"
+          id="permission-request"
+          data-i18n="options.siteAccess.request"
+          disabled
+        >
           サイトアクセスを許可
         </button>
       </fieldset>
 
       <form id="form">
         <fieldset>
-          <legend>ルール</legend>
+          <legend data-i18n="options.rules.legend">ルール</legend>
 
-          <p class="hint">
+          <p class="hint" data-i18n="options.rules.hint">
             左の正規表現にマッチした URL を、右の URL に置き換えます。正規表現は DNR が受け付ける形式で指定してください。
           </p>
 
@@ -41,6 +52,7 @@
                 type="text"
                 class="regex"
                 aria-label="マッチする正規表現"
+                data-i18n-aria-label="options.rules.regexLabel"
                 spellcheck="false"
                 autocomplete="off"
                 placeholder="^https://example\.com/search\?q=(.*)$"
@@ -49,28 +61,39 @@
                 type="text"
                 class="substitution"
                 aria-label="置換後の URL"
+                data-i18n-aria-label="options.rules.substitutionLabel"
                 spellcheck="false"
                 autocomplete="off"
                 placeholder="https://example.com/find?query=\1"
               />
-              <button type="button" class="remove">削除</button>
+              <button
+                type="button"
+                class="remove"
+                data-i18n="options.rules.remove"
+              >
+                削除
+              </button>
             </div>
           </template>
 
           <div class="actions">
-            <button type="button" id="add">ルールを追加</button>
+            <button type="button" id="add" data-i18n="options.rules.add">
+              ルールを追加
+            </button>
           </div>
         </fieldset>
 
         <div class="actions">
           <p id="status" class="status" role="status" aria-live="polite"></p>
-          <button type="submit" id="save">保存</button>
+          <button type="submit" id="save" data-i18n="options.rules.save">
+            保存
+          </button>
         </div>
       </form>
 
       <fieldset>
-        <legend>Playground</legend>
-        <p class="hint">
+        <legend data-i18n="options.playground.legend">Playground</legend>
+        <p class="hint" data-i18n="options.playground.hint">
           保存済みのルールで URL がどう書き換わるかを試せます。DNR の条件（大文字小文字を区別しない、fragment は除外）に合わせて判定します。
         </p>
 
@@ -82,11 +105,24 @@
             autocomplete="off"
             placeholder="https://example.com/old/123"
             aria-label="試す URL"
+            data-i18n-aria-label="options.playground.urlLabel"
           />
-          <button type="button" id="playground-run">実行</button>
+          <button
+            type="button"
+            id="playground-run"
+            data-i18n="options.playground.run"
+          >
+            実行
+          </button>
         </div>
 
-        <textarea id="playground-result" rows="6" readonly aria-label="Playground の結果"></textarea>
+        <textarea
+          id="playground-result"
+          rows="6"
+          readonly
+          aria-label="Playground の結果"
+          data-i18n-aria-label="options.playground.resultLabel"
+        ></textarea>
       </fieldset>
     </main>
 
