@@ -12,9 +12,13 @@ function translate(key: string): string {
 /**
  * `data-i18n` のテキストと、`data-i18n-aria-label` の属性を
  * 現在のロケールの文言に置き換える。キーが無ければ既定の文言を残す。
+ *
+ * `document` を渡したときだけ `<html lang>` を UI 言語に合わせる。
  */
 export function localize(root: ParentNode = document): void {
-  document.documentElement.lang = browser.i18n.getUILanguage();
+  if (root === document) {
+    document.documentElement.lang = browser.i18n.getUILanguage();
+  }
 
   for (const element of root.querySelectorAll<HTMLElement>('[data-i18n]')) {
     const key = element.dataset.i18n;
