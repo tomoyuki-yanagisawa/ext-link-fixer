@@ -23,13 +23,25 @@ vi.mock('wxt/browser', () => ({
   },
 }));
 
+const body = /<html[^>]*>([\s\S]*)<\/html>/.exec(html)?.[1];
+
+function resetDocument() {
+  if (!body) {
+    throw new Error('options/index.html: <html> not found');
+  }
+  document.documentElement.innerHTML = body;
+}
+
+type AddedRule = {
+  condition: { regexFilter: string };
+  priority: number;
+};
+
 describe('options page', () => {
   beforeEach(async () => {
     vi.resetModules();
     vi.clearAllMocks();
-    document.documentElement.innerHTML = html.match(
-      /<html[^>]*>([\s\S]*)<\/html>/,
-    )![1]!;
+    resetDocument();
     getDynamicRules.mockResolvedValue([
       {
         id: 1,
@@ -55,38 +67,34 @@ describe('options page', () => {
         ...document.querySelectorAll<HTMLDivElement>('.rule-row'),
       ];
       const first = rows()[0]!;
-      const down = first.querySelector<HTMLButtonElement>('.move-down')!;
+      const moveUp = first.querySelector<HTMLButtonElement>('.move-up')!;
+      const moveDown = first.querySelector<HTMLButtonElement>('.move-down')!;
 
-      expect(first.querySelector<HTMLButtonElement>('.move-up')!.disabled).toBe(
-        true,
-      );
+      expect(moveUp.disabled).toBe(true);
 
-      down.focus();
-      down.click();
+      moveDown.focus();
+      moveDown.click();
       expect(
         rows().map(
           (row) => row.querySelector<HTMLInputElement>('.regex')!.value,
         ),
       ).toEqual(['second', 'first']);
-      expect(first.querySelector<HTMLButtonElement>('.move-down')!.disabled).toBe(
-        true,
-      );
-      expect(document.activeElement).toBe(
-        first.querySelector<HTMLButtonElement>('.move-up'),
-      );
+      expect(moveDown.disabled).toBe(true);
+      expect(document.activeElement).toBe(moveUp);
       expect(updateDynamicRules).not.toHaveBeenCalled();
 
       document.querySelector<HTMLFormElement>('#form')!.requestSubmit();
       await vi.waitFor(() =>
         expect(updateDynamicRules).toHaveBeenCalledOnce(),
       );
+
+      const [call] = updateDynamicRules.mock.calls;
+      const addedRules = call![0].addRules as AddedRule[];
       expect(
-        updateDynamicRules.mock.calls[0]![0].addRules.map(
-          (rule: {
-            condition: { regexFilter: string };
-            priority: number;
-          }) => [rule.condition.regexFilter, rule.priority],
-        ),
+        addedRules.map(({ condition, priority }) => [
+          condition.regexFilter,
+          priority,
+        ]),
       ).toEqual([
         ['second', 2],
         ['first', 1],
@@ -101,28 +109,28 @@ describe('options page', () => {
       document.querySelector<HTMLButtonElement>('#add')!.click();
       expect(rows()).toHaveLength(3);
       const added = rows()[2]!;
-      expect(added.querySelector<HTMLButtonElement>('.move-down')!.disabled).toBe(
-        true,
-      );
+      const addedDown = added.querySelector<HTMLButtonElement>('.move-down')!;
+      expect(addedDown.disabled).toBe(true);
 
       added.querySelector<HTMLButtonElement>('.move-up')!.click();
       expect(rows()[1]).toBe(added);
 
       added.querySelector<HTMLButtonElement>('.remove')!.click();
       expect(rows()).toHaveLength(2);
-      expect(rows()[1]!.querySelector<HTMLButtonElement>('.move-down')!.disabled).toBe(
-        true,
-      );
+      const lastDown = rows()[1]!.querySelector<HTMLButtonElement>('.move-down')!;
+      expect(lastDown.disabled).toBe(true);
     });
   });
 
   describe('playground input', () => {
     it.each([
-      'not a URL',
-      'example.com',
-      'ftp://example.com/',
-      'javascript:alert(1)',
-    ])('rejects invalid Playground input: %s', (url) => {
+      ['', 'options_playground_urlRequired'],
+      ['not a URL', 'options_playground_invalidInput'],
+      ['example.com', 'options_playground_invalidInput'],
+      ['ftp://example.com/', 'options_playground_invalidInput'],
+      ['javascript:alert(1)', 'options_playground_invalidInput'],
+    ])('rejects invalid Playground input: %s', (url, expected) => {
+      // マウント時の loadRules() による呼び出しを除外する。
       getDynamicRules.mockClear();
       document.querySelector<HTMLInputElement>('#playground-url')!.value = url;
       document.querySelector<HTMLButtonElement>('#playground-run')!.click();
@@ -130,7 +138,7 @@ describe('options page', () => {
       expect(
         document.querySelector<HTMLTextAreaElement>('#playground-result')!
           .value,
-      ).toContain('options_playground_invalidInput');
+      ).toContain(expected);
       expect(getDynamicRules).not.toHaveBeenCalled();
     });
 
@@ -140,13 +148,11 @@ describe('options page', () => {
         'http://example.com/';
       document.querySelector<HTMLButtonElement>('#playground-run')!.click();
       await vi.waitFor(() =>
-        expect(getDynamicRules).toHaveBeenCalledOnce(),
-      );
-      await vi.waitFor(() =>
         expect(
           document.querySelector<HTMLButtonElement>('#playground-run')!.disabled,
         ).toBe(false),
       );
+      expect(getDynamicRules).toHaveBeenCalledOnce();
 
       const result = document.querySelector<HTMLTextAreaElement>(
         '#playground-result',

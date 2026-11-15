@@ -4,6 +4,7 @@ import {
   followRedirects,
   formatOutcome,
   normalizeUrl,
+  type RuleOutcome,
 } from '../../entrypoints/options/playground';
 
 const { getMessage } = vi.hoisted(() => ({
@@ -102,9 +103,7 @@ describe('followRedirects', () => {
   });
 
   it('accepts a single redirect that terminates', () => {
-    expect(followRedirects('https://a/', rules.slice(0, 1)).exceeded).toBe(
-      false,
-    );
+    expect(followRedirects('https://a/', rules.slice(0, 1)).exceeded).toBe(false);
   });
 
   it('stops when a result is not a valid URL', () => {
@@ -128,30 +127,20 @@ describe('followRedirects', () => {
 });
 
 describe('formatOutcome', () => {
-  it('formats unmatched, applied, unchanged, and invalid outcomes', () => {
-    expect(formatOutcome({ status: 'unmatched' }, 0, 'https://x/')).toBe(
-      'line 1: no match',
-    );
-    expect(
-      formatOutcome(
-        { status: 'applied', result: 'https://y/' },
-        1,
-        'https://x/',
-      ),
-    ).toBe('line 2: applied: https://y/');
-    expect(
-      formatOutcome(
-        { status: 'applied', result: 'https://x/' },
-        0,
-        'https://x/',
-      ),
-    ).toBe('line 1: applied: https://x/ (unchanged)');
-    expect(
-      formatOutcome(
-        { status: 'skipped', result: 'not a url' },
-        2,
-        'https://x/',
-      ),
-    ).toBe('line 3: not applied: not a url (invalid)');
+  it.each<[RuleOutcome, number, string]>([
+    [{ status: 'unmatched' }, 0, 'line 1: no match'],
+    [{ status: 'applied', result: 'https://y/' }, 1, 'line 2: applied: https://y/'],
+    [
+      { status: 'applied', result: 'https://x/' },
+      0,
+      'line 1: applied: https://x/ (unchanged)',
+    ],
+    [
+      { status: 'skipped', result: 'not a url' },
+      2,
+      'line 3: not applied: not a url (invalid)',
+    ],
+  ])('formats %o as %s', (outcome, index, expected) => {
+    expect(formatOutcome(outcome, index, 'https://x/')).toBe(expected);
   });
 });
