@@ -5,6 +5,7 @@
 :root {
   color-scheme: light dark;
   --border: color-mix(in srgb, CanvasText 20%, transparent);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 * {
@@ -78,7 +79,13 @@ button {
 }
 
 .regex {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--mono);
+}
+
+#rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .rule-row {
@@ -88,16 +95,12 @@ button {
   align-items: center;
 }
 
-.rule-row + .rule-row {
-  margin-top: 0.5rem;
-}
-
 .rule-actions {
   display: flex;
   gap: 0.5rem;
 }
 
-.actions {
+.form-actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -148,7 +151,7 @@ button {
   min-height: 8em;
   padding: 0.375rem;
   font: inherit;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--mono);
   resize: vertical;
 }
 
