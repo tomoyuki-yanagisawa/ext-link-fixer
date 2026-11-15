@@ -49,6 +49,9 @@ jobs:
         run: npm run typecheck
 
       - if: steps.check.outputs.exists == 'false'
+        run: npm test
+
+      - if: steps.check.outputs.exists == 'false'
         run: |
           npm run zip
           npm run xpi

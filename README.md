@@ -76,11 +76,14 @@ npm run zip              # Chrome 向け zip
 npm run zip:firefox      # Firefox 向け zip
 npm run xpi              # Firefox 向け zip と xpi
 npm run typecheck        # 型チェック
+npm test                 # ユニットテスト
 npm run icons:theme      # テーマ別アイコン PNG を手動生成（通常はビルド時に自動生成）
 ```
 
 `test/preview.html` をブラウザで開くと、サンプル入りの静的な見た目を確認できます（JS は動作しません）。
 
 リリースは GitHub Actions で自動化されています。`main` の `package.json` の `version` を上げて push すると、ビルドと GitHub Release の作成が行われます。
+
+GitHub Actions の CI は PR と `main` への push 時に型チェック、テスト、両ブラウザ向けビルドを実行します。リリース時にも型チェックとテストを実行します。
 
 構成の詳細は [docs/DESIGN.v1.md](docs/DESIGN.v1.md) を参照してください。

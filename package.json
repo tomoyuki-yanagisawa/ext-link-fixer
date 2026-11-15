@@ -12,6 +12,7 @@
     "zip:firefox": "wxt zip -b firefox --mv3",
     "xpi": "npm run zip:firefox && node scripts/make-xpi.mjs",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "icons:theme": "node scripts/generate-theme-icons.mjs",
     "postinstall": "wxt prepare"
   },
@@ -19,6 +20,7 @@
     "@wxt-dev/auto-icons": "^1.1.2",
     "sharp": "^0.35.5",
     "typescript": "^7.0.2",
+    "vitest": "^5.1.0",
     "wxt": "^0.21.5"
   }
 }
