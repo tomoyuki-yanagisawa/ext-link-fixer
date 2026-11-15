@@ -45,6 +45,13 @@ function setStatus(message: string, kind: StatusKind = '') {
   setStatusText(statusEl, message, kind);
 }
 
+function updateMoveButtons() {
+  for (const row of rowsEl.children) {
+    requiredElement<HTMLButtonElement>(row, '.move-up').disabled = !row.previousElementSibling;
+    requiredElement<HTMLButtonElement>(row, '.move-down').disabled = !row.nextElementSibling;
+  }
+}
+
 function createRow(regex = '', substitution = '') {
   const row = ruleTemplate.content.firstElementChild?.cloneNode(true);
   if (!(row instanceof HTMLDivElement)) {
@@ -54,6 +61,27 @@ function createRow(regex = '', substitution = '') {
   requiredElement<HTMLInputElement>(row, '.regex').value = regex;
   requiredElement<HTMLInputElement>(row, '.substitution').value = substitution;
 
+  const up = requiredElement<HTMLButtonElement>(row, '.move-up');
+  const down = requiredElement<HTMLButtonElement>(row, '.move-down');
+
+  up.addEventListener('click', () => {
+    const previous = row.previousElementSibling;
+    if (!previous) return;
+    previous.before(row);
+    updateMoveButtons();
+    (up.disabled ? down : up).focus();
+    setStatus('');
+  });
+
+  down.addEventListener('click', () => {
+    const next = row.nextElementSibling;
+    if (!next) return;
+    next.after(row);
+    updateMoveButtons();
+    (down.disabled ? up : down).focus();
+    setStatus('');
+  });
+
   requiredElement<HTMLButtonElement>(row, '.remove').addEventListener('click', () => {
     row.remove();
     if (!rowsEl.children.length) {
@@ -61,6 +89,7 @@ function createRow(regex = '', substitution = '') {
       rowsEl.append(next);
       requiredElement<HTMLInputElement>(next, '.regex').focus();
     }
+    updateMoveButtons();
   });
 
   return row;
@@ -69,6 +98,7 @@ function createRow(regex = '', substitution = '') {
 function appendRow(regex?: string, substitution?: string) {
   const row = createRow(regex, substitution);
   rowsEl.append(row);
+  updateMoveButtons();
   return row;
 }
 

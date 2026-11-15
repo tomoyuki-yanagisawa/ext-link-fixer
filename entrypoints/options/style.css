@@ -92,6 +92,11 @@ button {
   margin-top: 0.5rem;
 }
 
+.rule-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .actions {
   display: flex;
   align-items: center;
