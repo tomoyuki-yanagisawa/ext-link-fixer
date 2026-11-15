@@ -46,7 +46,5 @@
   "options_playground_unchanged": { "message": "(URL is unchanged)" },
   "options_playground_invalidUrl": { "message": "(not a valid URL)" },
   "options_playground_error": { "message": "Error: $1" },
-  "options_playground_failed": { "message": "Simulation failed: $1" },
-  "popup_description": { "message": "Rewrite URLs with your saved rules." },
-  "popup_openOptions": { "message": "Open settings" }
+  "options_playground_failed": { "message": "Simulation failed: $1" }
 }
