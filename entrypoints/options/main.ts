@@ -1,13 +1,9 @@
+import { i18n } from '#i18n';
 import { browser } from 'wxt/browser';
+import { requiredElement, setLabel, setText } from '@/utils/dom';
 import { evaluateRules, formatOutcome, normalizeUrl } from './playground';
 import { hasHostAccess, requestHostAccess } from './permissions';
 import { loadSavedRules, toDynamicRules, verifyRegex } from './rules';
-
-function requiredElement<T extends Element>(root: ParentNode, selector: string): T {
-  const element = root.querySelector<T>(selector);
-  if (!element) throw new Error(`Element not found: ${selector}`);
-  return element;
-}
 
 const formEl = requiredElement<HTMLFormElement>(document, '#form');
 const rowsEl = requiredElement<HTMLDivElement>(document, '#rows');
@@ -20,6 +16,31 @@ const playgroundRunButton = requiredElement<HTMLButtonElement>(document, '#playg
 const playgroundResultEl = requiredElement<HTMLTextAreaElement>(document, '#playground-result');
 const permissionStatusEl = requiredElement<HTMLParagraphElement>(document, '#permission-status');
 const permissionRequestButton = requiredElement<HTMLButtonElement>(document, '#permission-request');
+
+document.documentElement.lang = browser.i18n.getUILanguage();
+document.title = i18n.t('extensionName');
+
+setText('#heading', i18n.t('extensionName'));
+setText('#lead', i18n.t('options.lead'));
+setText('#site-access-legend', i18n.t('options.siteAccess.legend'));
+setText('#permission-status', i18n.t('options.siteAccess.checking'));
+setText('#permission-request', i18n.t('options.siteAccess.request'));
+setText('#rules-legend', i18n.t('options.rules.legend'));
+setText('#rules-hint', i18n.t('options.rules.hint'));
+setText('#add', i18n.t('options.rules.add'));
+setText('#save', i18n.t('options.rules.save'));
+setText('#playground-legend', i18n.t('options.playground.legend'));
+setText('#playground-hint', i18n.t('options.playground.hint'));
+setText('#playground-run', i18n.t('options.playground.run'));
+setLabel('#playground-url', i18n.t('options.playground.urlLabel'));
+setLabel('#playground-result', i18n.t('options.playground.resultLabel'));
+setLabel('.regex', i18n.t('options.rules.regexLabel'), ruleTemplate.content);
+setLabel(
+  '.substitution',
+  i18n.t('options.rules.substitutionLabel'),
+  ruleTemplate.content,
+);
+setText('.remove', i18n.t('options.rules.remove'), ruleTemplate.content);
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -92,7 +113,7 @@ function focusInput(row: Element | undefined, selector: string) {
 }
 
 async function loadRules() {
-  setStatus('読み込み中…');
+  setStatus(i18n.t('options.rules.loading'));
 
   try {
     const rules = await browser.declarativeNetRequest.getDynamicRules();
@@ -111,7 +132,10 @@ async function loadRules() {
 
     setStatus('');
   } catch (error) {
-    setStatus(`ルールの読み込みに失敗しました: ${errorMessage(error)}`, 'error');
+    setStatus(
+      i18n.t('options.rules.loadFailed', { error: errorMessage(error) }),
+      'error',
+    );
     if (!rowsEl.children.length) {
       appendRow();
     }
@@ -134,7 +158,7 @@ async function saveRules() {
     }
     if (regexEmpty || substitutionEmpty) {
       setStatus(
-        `${index + 1} 行目: 正規表現と置換後の URL の両方を入力してください。`,
+        i18n.t('options.rules.bothRequired', { line: index + 1 }),
         'error',
       );
       focusInput(row.row, regexEmpty ? '.regex' : '.substitution');
@@ -148,7 +172,10 @@ async function saveRules() {
     const result = await verifyRegex(entry.regex);
     if (!result.isSupported) {
       setStatus(
-        `${entry.line} 行目の正規表現がサポートされていません: ${result.reason ?? '理由不明'}`,
+        i18n.t('options.rules.unsupported', {
+          line: entry.line,
+          reason: result.reason ?? i18n.t('options.rules.unknownReason'),
+        }),
         'error',
       );
       focusInput(entry.row, '.regex');
@@ -157,7 +184,7 @@ async function saveRules() {
   }
 
   saveButton.disabled = true;
-  setStatus('保存中…');
+  setStatus(i18n.t('options.rules.saving'));
 
   try {
     const addRules = toDynamicRules(
@@ -172,12 +199,15 @@ async function saveRules() {
 
     setStatus(
       addRules.length
-        ? `${addRules.length} 件のルールを保存しました。`
-        : 'すべてのルールを削除しました。',
+        ? i18n.t('options.rules.saved', { count: addRules.length })
+        : i18n.t('options.rules.cleared'),
       'success',
     );
   } catch (error) {
-    setStatus(`保存に失敗しました: ${errorMessage(error)}`, 'error');
+    setStatus(
+      i18n.t('options.rules.saveFailed', { error: errorMessage(error) }),
+      'error',
+    );
   } finally {
     saveButton.disabled = false;
   }
@@ -185,14 +215,16 @@ async function saveRules() {
 
 function showPlaygroundError(message: string) {
   playgroundResultEl.className = 'error';
-  playgroundResultEl.value = `エラー: ${message}`;
+  playgroundResultEl.value = i18n.t('options.playground.error', {
+    message,
+  });
 }
 
 async function runPlayground() {
   const url = playgroundUrlEl.value.trim();
 
   if (!url) {
-    showPlaygroundError('試す URL を入力してください。');
+    showPlaygroundError(i18n.t('options.playground.urlRequired'));
     return;
   }
 
@@ -203,7 +235,7 @@ async function runPlayground() {
     const rules = await loadSavedRules();
 
     if (!rules.length) {
-      playgroundResultEl.value = '保存済みのルールがありません。';
+      playgroundResultEl.value = i18n.t('options.playground.empty');
       return;
     }
 
@@ -211,15 +243,13 @@ async function runPlayground() {
     const lines: string[] = [];
 
     if (target.hadFragment) {
-      lines.push(
-        '# 以降はネットワークリクエストに含まれないため、判定から除外しています。',
-      );
+      lines.push(i18n.t('options.playground.fragmentIgnored'));
     }
 
     const outcomes = evaluateRules(target.url, rules);
 
     if (!outcomes.some((outcome) => outcome.matched)) {
-      lines.push('どのルールにもマッチしませんでした。');
+      lines.push(i18n.t('options.playground.noMatch'));
     }
 
     outcomes.forEach((outcome, index) => {
@@ -228,7 +258,9 @@ async function runPlayground() {
 
     playgroundResultEl.value = lines.join('\n');
   } catch (error) {
-    showPlaygroundError(`シミュレーションに失敗しました: ${errorMessage(error)}`);
+    showPlaygroundError(
+      i18n.t('options.playground.failed', { error: errorMessage(error) }),
+    );
   } finally {
     playgroundRunButton.disabled = false;
   }
@@ -238,9 +270,9 @@ function setPermissionState(granted: boolean) {
   permissionRequestButton.disabled = granted;
   setStatusText(
     permissionStatusEl,
-    granted
-      ? 'サイトアクセスは許可されています。'
-      : 'サイトアクセスが許可されていません。URL の書き換えには許可が必要です。',
+    i18n.t(
+      granted ? 'options.siteAccess.granted' : 'options.siteAccess.denied',
+    ),
     granted ? 'success' : 'error',
   );
 }
@@ -264,7 +296,7 @@ permissionRequestButton.addEventListener('click', async () => {
   permissionRequestButton.disabled = false;
   setStatusText(
     permissionStatusEl,
-    'サイトアクセスを許可できませんでした。ブラウザの拡張機能の設定から許可してください。',
+    i18n.t('options.siteAccess.failed'),
     'error',
   );
 });
