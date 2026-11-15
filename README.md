@@ -77,7 +77,6 @@ npm run zip:firefox      # Firefox 向け zip
 npm run xpi              # Firefox 向け zip と xpi
 npm run typecheck        # 型チェック
 npm test                 # ユニットテスト
-npm run icons:theme      # テーマ別アイコン PNG を手動生成（通常はビルド時に自動生成）
 ```
 
 `test/preview.html` をブラウザで開くと、サンプル入りの静的な見た目を確認できます（JS は動作しません）。

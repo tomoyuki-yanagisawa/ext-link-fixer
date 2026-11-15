@@ -135,8 +135,8 @@ link-fixer/
 
 ### `package.json`
 
-- スクリプトは `dev` / `dev:firefox` / `build` / `build:firefox` / `zip` / `zip:firefox` / `xpi` / `typecheck` / `test` / `icons:theme` / `postinstall`。
-- 開発依存は `wxt`、`@wxt-dev/auto-icons`、`sharp`、`typescript`、`vitest`、DOM テスト用の `jsdom`。実行時の依存パッケージは持たない。
+- スクリプトは `dev` / `dev:firefox` / `build` / `build:firefox` / `zip` / `zip:firefox` / `xpi` / `typecheck` / `test` / `postinstall`。
+- 開発依存は `wxt`、`@wxt-dev/auto-icons`、`typescript`、`vitest`、DOM テスト用の `jsdom`。実行時の依存パッケージは持たない。
 - `postinstall` の `wxt prepare` で、型チェックに必要な `.wxt/` の設定を生成する。
 - 現在の定義は `package.json` を参照する。
 
@@ -151,8 +151,8 @@ link-fixer/
 
 - WXT が `manifest.json` と `options_ui` を自動生成する。手書きの `manifest.json` は不要。
 - `name` / `description` / `action.default_title` は `__MSG_...__`、`default_locale` は `en`（多言語対応の節を参照）。
-- `@wxt-dev/auto-icons` が `assets/icon.svg` から各サイズの PNG を生成し、`icons` と `action.default_icon` を設定する。
-- Firefox では `action.theme_icons` でライト/ダークテーマ別のアイコンを指定する。`assets/icon.svg`（明るいテーマ用）と `assets/icon-dark.svg`（暗いテーマ用）から PNG を `.wxt/` に生成し、`build:publicAssets` フックで出力に追加する。`npm run icons:theme` で `public/theme-icons/` に単独生成することもできる。Chrome の manifest には `theme_icons` を含めない。
+- `@wxt-dev/auto-icons` が `assets/icon.svg` から各サイズの PNG を生成し、`icons` を設定する。`action.default_icon` は manifest で同じパスを指定する。
+- アイコンは `assets/icon.svg` の 1 種類だけを使う。Chrome / Firefox とも同じアイコンで、ライト・ダーク両方のツールバーで見えるよう、グレー（`#6b6b6b`、線幅 9）にしている。Firefox の `theme_icons` は使わない。
 - Firefox は WXT のデフォルトが Manifest V2 のため、**Firefox のコマンドに `--mv3` を必ず指定**する。
 - Firefox の拡張機能 ID は `@link-fixer.tomoyuki-yanagisawa` とし、公開後も維持する。
 - 拡張機能の外部で保存・処理するためのユーザーデータ収集・送信は行わないため、Firefox のデータ収集申告を `none` とする。
@@ -204,7 +204,6 @@ npm run zip:firefox      # Firefox 向け zip
 npm run xpi              # Firefox 向け zip と xpi
 npm run typecheck        # TypeScript の型チェック
 npm test                 # ユニットテスト
-npm run icons:theme      # テーマ別アイコンを単独生成
 ```
 
 生成される拡張機能は `.output/` 以下に出力される。両ブラウザに読み込み、同じルールで動くことを確認する。
