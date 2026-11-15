@@ -30,22 +30,33 @@ link-fixer/
 ├── wxt.config.ts
 ├── assets/
 │   └── icon.svg
+├── public/
+│   └── _locales/
+│       ├── en/
+│       │   └── messages.json
+│       └── ja/
+│           └── messages.json
 ├── entrypoints/
 │   ├── options/
 │   │   ├── index.html
 │   │   ├── main.ts
+│   │   ├── playground.ts
+│   │   ├── permissions.ts
+│   │   ├── rules.ts
 │   │   └── style.css
 │   └── popup/
 │       ├── index.html
 │       ├── main.ts
 │       └── style.css
+├── utils/
+│   └── i18n.ts
 └── test/
     └── preview.html
 ```
 
 スタイルは `entrypoints/options/style.css` に記述する。色・フォント・部品の見た目はブラウザ既定に任せ、レイアウトに必要な最小限だけを指定する。文字サイズ・余白は `rem` / `em` を使い、ブラウザの既定フォントサイズに追従させる。OS やブラウザで見た目が異なってよい。
 
-`test/preview.html` は、サンプル入りの静的なプレビュー。ブラウザで直接開いて見た目を確認するための開発用ファイルで、拡張機能には含まれない（JS は動作しない）。
+`test/preview.html` は、サンプル入りの静的なプレビュー。ブラウザで直接開いて見た目を確認するための開発用ファイルで、拡張機能には含まれない（JS は動作しない）。翻訳の対象外で、日本語の文言をそのまま持つ。
 
 `package-lock.json` は npm が生成し、依存関係を固定するため Git 管理する。`.output/`、`.wxt/`、`node_modules/` は Git 管理しない。
 
@@ -123,24 +134,10 @@ link-fixer/
 
 ### `package.json`
 
-```json
-{
-  "name": "link-fixer",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "wxt",
-    "dev:firefox": "wxt -b firefox --mv3",
-    "build": "wxt build",
-    "build:firefox": "wxt build -b firefox --mv3",
-    "typecheck": "tsc --noEmit",
-    "postinstall": "wxt prepare"
-  }
-}
-```
-
-開発依存として `wxt` と `typescript` を使用する。`postinstall` の `wxt prepare` により、型チェックに必要な `.wxt/` の設定を生成する。
+- スクリプトは `dev` / `dev:firefox` / `build` / `build:firefox` / `zip` / `zip:firefox` / `xpi` / `typecheck` / `icons:theme` / `postinstall`。
+- 開発依存は `wxt`、`@wxt-dev/auto-icons`、`sharp`、`typescript`。実行時の依存パッケージは持たない。
+- `postinstall` の `wxt prepare` で、型チェックに必要な `.wxt/` の設定を生成する。
+- 現在の定義は `package.json` を参照する。
 
 ### `tsconfig.json`
 
@@ -149,25 +146,10 @@ link-fixer/
 
 ### `wxt.config.ts`
 
-```ts
-export default defineConfig({
-  manifest: {
-    name: 'Link Fixer',
-    permissions: ['declarativeNetRequest'],
-    host_permissions: ['http://*/*', 'https://*/*'],
-    browser_specific_settings: {
-      gecko: {
-        id: '@link-fixer.tomoyuki-yanagisawa',
-        data_collection_permissions: {
-          required: ['none'],
-        },
-      },
-    },
-  },
-});
-```
+現在の定義は `wxt.config.ts` を参照する。主な内容は次のとおり。
 
 - WXT が `manifest.json` と `options_ui` を自動生成する。手書きの `manifest.json` は不要。
+- `name` / `description` / `action.default_title` は `__MSG_...__`、`default_locale` は `en`（多言語対応の節を参照）。
 - `@wxt-dev/auto-icons` が `assets/icon.svg` から各サイズの PNG を生成し、`icons` と `action.default_icon` を設定する。
 - Firefox では `action.theme_icons` でライト/ダークテーマ別のアイコンを指定する。`assets/icon.svg`（明るいテーマ用）と `assets/icon-dark.svg`（暗いテーマ用）から PNG を生成する。PNG は `build:before` フックでビルド時に生成し、Git 管理しない（`npm run icons:theme` で単独実行も可能）。Chrome の manifest には `theme_icons` を含めない。
 - Firefox は WXT のデフォルトが Manifest V2 のため、**Firefox のコマンドに `--mv3` を必ず指定**する。
@@ -176,20 +158,31 @@ export default defineConfig({
 - 任意のサイトでのリダイレクトのために広いホスト権限を要求する。ユーザーへの権限警告は許容する。
 - DNR の redirect は対象 URL のホスト権限が必須で、権限がないとルールは静かに無視される。
 
+### 多言語対応（`browser.i18n`）
+
+- `public/_locales/en/messages.json`（既定）と `public/_locales/ja/messages.json` を手書きし、`manifest.default_locale` を `en` にする。日本語以外の UI 言語は英語にフォールバックする。
+- manifest の `name` / `description` / `action.default_title` は `__MSG_extensionName__` などのプレースホルダーで指定する。
+- HTML の文言は `data-i18n="key"`、属性は `data-i18n-aria-label="key"` のように指定し、既定ロケール（英語）の文言をそのまま書いておく。
+- 起動時に `utils/i18n.ts` の `localize()` が `[data-i18n]` のテキストと `[data-i18n-aria-label]` の属性を `browser.i18n.getMessage()` で置き換える。キーが見つからない場合は HTML の文言を残す。
+- `<template>` の中は `document` の走査対象外なので、`localize(ruleTemplate.content)` を呼ぶ。
+- 実行時に決まる文言は `browser.i18n.getMessage()` を直接呼び、置換は `$1`〜`$9` に文字列の配列で渡す。
+- 表示言語はブラウザの UI 言語に従う。`browser.i18n` の仕様上、拡張機能内で言語を切り替える UI は持たない。`<html lang>` は `browser.i18n.getUILanguage()` の値に合わせる。
+- 翻訳の追加は `public/_locales/<lang>/messages.json` を増やすだけで、コードの変更は不要。
+
 ### `entrypoints/options/index.html`
 
 - 通常の HTML。`<meta name="manifest.open_in_tab" content="true">` で設定画面をタブ表示する。
 - `<script type="module" src="./main.ts"></script>` で実装を読み込む。
-- 設定画面の CSS は `<style>` にまとめる。
+- 文言は `data-i18n` / `data-i18n-aria-label` で指定する（多言語対応の節を参照）。
+- スタイルは `style.css` に分ける。
 
 ### `entrypoints/options/main.ts`
 
-- `import { browser } from 'wxt/browser'` を使う。
-- 読み込み：`browser.declarativeNetRequest.getDynamicRules()`。
-- 検証：`browser.declarativeNetRequest.isRegexSupported()`。
-- 保存：`browser.declarativeNetRequest.updateDynamicRules()`。
-- UI 操作、入力値の検証、DNR への変換はシンプルな関数で実装する。
-- Playground のマッチ判定と置換も同じファイル内の関数で実装する。
+- `main.ts` は DOM の取得、イベント接続、保存・表示の進行を担当する。
+- ルールの読み込み・検証・DNR への変換は `rules.ts`。
+- Playground の URL 正規化・マッチ判定・結果整形は `playground.ts`。
+- サイトアクセスの確認・要求は `permissions.ts`。
+- DNR の操作は `browser.declarativeNetRequest` をそのまま使う。
 
 ### `entrypoints/popup/`
 
@@ -205,8 +198,11 @@ npm run dev              # Chrome
 npm run dev:firefox      # Firefox (MV3)
 npm run build            # Chrome
 npm run build:firefox    # Firefox (MV3)
-npm run xpi              # Firefox 向けの zip と xpi
+npm run zip              # Chrome 向け zip
+npm run zip:firefox      # Firefox 向け zip
+npm run xpi              # Firefox 向け zip と xpi
 npm run typecheck        # TypeScript の型チェック
+npm run icons:theme      # テーマ別アイコンを単独生成
 ```
 
 生成される拡張機能は `.output/` 以下に出力される。両ブラウザに読み込み、同じルールで動くことを確認する。
@@ -215,7 +211,7 @@ npm run typecheck        # TypeScript の型チェック
 
 `.github/workflows/release.yml` が、`main` ブランチの `package.json` の更新を契機にビルドとリリースを行う。
 
-- `package.json` の `version` と同じ名前のタグ（`v0.1.0` など）のリリースが未作成の場合だけ実行する。バージョンを上げずに `package.json` を変更した場合は何もしない。
+- `package.json` の `version` と同じ名前のタグ（`v0.1.9` など）のリリースが未作成の場合だけ実行する。バージョンを上げずに `package.json` を変更した場合は何もしない。
 - 型チェックの後、Chrome / Firefox 向けの zip を作成する。Firefox 用は同じ内容を `.xpi` としても添付する。
 - 署名は行わない。Firefox の通常版（Release / Beta）は未署名アドオンを拒否するため、次のいずれかで使う。
   - Firefox ESR / Developer Edition / Nightly で `xpinstall.signatures.required` を `false` にして `.xpi` をインストールする
@@ -250,9 +246,14 @@ npm run typecheck        # TypeScript の型チェック
 - 保存後に即時反映され、ブラウザ再起動後も設定が維持される。
 - バックグラウンドスクリプト、コンテンツスクリプト、別ストレージを使わない。
 
-## 参考（公式）
+## 参考
 
 - WXT Manifest: https://wxt.dev/guide/essentials/config/manifest
+- WXT I18n: https://wxt.dev/guide/essentials/i18n
+- MDN Internationalization: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Internationalization
+- Chrome i18n: https://developer.chrome.com/docs/extensions/reference/api/i18n
+- messages.json の形式: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/i18n/Locale-Specific_Message_reference
+- data-i18n for Small Web Projects: https://blog.nishikanta.in/data-i18n-for-small-web-projects-a-complete-guide-to-internationalization
 - WXT Entrypoints / Options: https://wxt.dev/guide/essentials/entrypoints
 - WXT Browser Targets: https://wxt.dev/guide/essentials/target-different-browsers
 - Chrome DNR: https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest
