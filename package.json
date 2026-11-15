@@ -7,7 +7,9 @@
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox --mv3",
     "build": "wxt build",
+    "postbuild": "node scripts/check-locales.mjs",
     "build:firefox": "wxt build -b firefox --mv3",
+    "postbuild:firefox": "node scripts/check-locales.mjs",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox --mv3",
     "xpi": "npm run zip:firefox && node scripts/make-xpi.mjs",
@@ -20,5 +22,8 @@
     "sharp": "^0.35.5",
     "typescript": "^7.0.2",
     "wxt": "^0.21.5"
+  },
+  "dependencies": {
+    "@wxt-dev/i18n": "^0.2.8"
   }
 }
