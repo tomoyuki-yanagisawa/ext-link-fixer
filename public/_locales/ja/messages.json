@@ -46,7 +46,5 @@
   "options_playground_unchanged": { "message": "（URL は変わりません）" },
   "options_playground_invalidUrl": { "message": "（有効な URL ではありません）" },
   "options_playground_error": { "message": "エラー: $1" },
-  "options_playground_failed": { "message": "シミュレーションに失敗しました: $1" },
-  "popup_description": { "message": "保存したルールで URL を書き換えます。" },
-  "popup_openOptions": { "message": "設定を開く" }
+  "options_playground_failed": { "message": "シミュレーションに失敗しました: $1" }
 }

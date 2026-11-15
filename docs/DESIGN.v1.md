@@ -17,8 +17,8 @@ Firefox / Chrome 共通で動作する、**正規表現による URL リダイ�
 - UI は素の **HTML + CSS + TypeScript**。React 等は使用しない。
 - リダイレクトは `declarativeNetRequest`（DNR）の**動的ルール**で実行する。
 - DNR の動的ルールを設定の保存先としても使い、`storage.local` を使用しない。
-- バックグラウンドスクリプト、コンテンツスクリプト、独自サーバーは作らない。
-- ツールバーのアイコンからポップアップを開き、そこから設定画面を開けるようにする。ポップアップの JS はクリック時だけ動く。
+- コンテンツスクリプト、独自サーバーは作らない。
+- バックグラウンドはツールバーのアイコンから設定画面を開くためだけに使い、状態を持たない。アイコンのクリックで `browser.runtime.openOptionsPage()` を呼ぶ。
 - ユニットテストに Vitest を使用する。実行時の追加依存ライブラリは導入しない。
 
 ## 3. 最小ディレクトリ構成
@@ -37,16 +37,13 @@ link-fixer/
 │       └── ja/
 │           └── messages.json
 ├── entrypoints/
-│   ├── options/
-│   │   ├── index.html
-│   │   ├── main.ts
-│   │   ├── playground.ts
-│   │   ├── permissions.ts
-│   │   ├── rules.ts
-│   │   └── style.css
-│   └── popup/
+│   ├── background.ts
+│   └── options/
 │       ├── index.html
 │       ├── main.ts
+│       ├── playground.ts
+│       ├── permissions.ts
+│       ├── rules.ts
 │       └── style.css
 ├── utils/
 │   └── i18n.ts
@@ -70,7 +67,7 @@ link-fixer/
 
 ### 設定画面
 
-- ツールバーのアイコン → ポップアップの「設定を開く」から開く。`browser.runtime.openOptionsPage()` を使う。
+- ツールバーのアイコンをクリックすると開く。バックグラウンドで `browser.action.onClicked` を受け、`browser.runtime.openOptionsPage()` を呼ぶ。
 
 - 1 行（または 1 ブロック）につき「マッチする正規表現」「置換後 URL」の 2 入力欄を表示する。
 - ルールの追加・削除・上下への移動と、保存の操作を用意する。並べ替えは保存時に反映する。
@@ -185,11 +182,10 @@ link-fixer/
 - サイトアクセスの確認・要求は `permissions.ts`。
 - DNR の操作は `browser.declarativeNetRequest` をそのまま使う。
 
-### `entrypoints/popup/`
+### `entrypoints/background.ts`
 
-- ツールバーのアイコンから開く小さなポップアップ。見出しと「設定を開く」ボタンだけを置く。
-- ボタンで `browser.runtime.openOptionsPage()` を呼び、設定画面をタブで開く。
-- ポップアップの JS はクリックしたときだけ実行され、常駐しない。
+- ツールバーのアイコンがクリックされたときに `browser.runtime.openOptionsPage()` を呼ぶ。
+- 状態を持たず、クリック時の 1 回だけ動く。Manifest V3 では Service Worker（Firefox はイベントページ）として必要なときだけ起動する。
 
 ## 7. 開発・ビルド
 
@@ -247,7 +243,7 @@ npm test                 # ユニットテスト
 - Firefox / Chrome の両方で設定画面を開ける。
 - 複数の正規表現ルールを追加・編集・削除できる。
 - 保存後に即時反映され、ブラウザ再起動後も設定が維持される。
-- バックグラウンドスクリプト、コンテンツスクリプト、別ストレージを使わない。
+- コンテンツスクリプトと別ストレージを使わない。バックグラウンドは設定画面を開くためだけに使う。
 
 ## 参考
 
