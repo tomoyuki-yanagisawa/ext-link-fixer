@@ -1,1 +1,1 @@
-export function generateThemeIcons(): Promise<void>;
+export function generateThemeIcons(outDir?: string): Promise<void>;

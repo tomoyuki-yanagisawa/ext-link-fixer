@@ -75,6 +75,7 @@ link-fixer/
 - 1 行（または 1 ブロック）につき「マッチする正規表現」「置換後 URL」の 2 入力欄を表示する。
 - **追加**、**削除**、**保存**の 3 操作だけを用意する。
 - 起動時に `getDynamicRules()` から既存のルールを読み込み、表示する。
+- 読み込み中と保存中は編集・保存を無効化する。読み込みに失敗した場合は、既存ルールの意図しない上書きを防ぐため、画面を再読み込みするまで無効のままにする。
 - ルールの並び順で優先順位を決める（**上が優先**）。初版では並べ替え UI は設けない。
 - 保存成功・失敗は画面内に短く表示する。
 - サイトアクセスの状態と許可ボタンを常に表示する。許可済みならボタンを無効化し、未許可ならボタンから `permissions.request()` を呼ぶ。失敗した場合はブラウザの設定から許可するよう案内する。Firefox 126 以前は Manifest V3 のホスト権限がインストール時に付与されず、リダイレクトだけが無効になるため。
@@ -151,7 +152,7 @@ link-fixer/
 - WXT が `manifest.json` と `options_ui` を自動生成する。手書きの `manifest.json` は不要。
 - `name` / `description` / `action.default_title` は `__MSG_...__`、`default_locale` は `en`（多言語対応の節を参照）。
 - `@wxt-dev/auto-icons` が `assets/icon.svg` から各サイズの PNG を生成し、`icons` と `action.default_icon` を設定する。
-- Firefox では `action.theme_icons` でライト/ダークテーマ別のアイコンを指定する。`assets/icon.svg`（明るいテーマ用）と `assets/icon-dark.svg`（暗いテーマ用）から PNG を生成する。PNG は `build:before` フックでビルド時に生成し、Git 管理しない（`npm run icons:theme` で単独実行も可能）。Chrome の manifest には `theme_icons` を含めない。
+- Firefox では `action.theme_icons` でライト/ダークテーマ別のアイコンを指定する。`assets/icon.svg`（明るいテーマ用）と `assets/icon-dark.svg`（暗いテーマ用）から PNG を `.wxt/` に生成し、`build:publicAssets` フックで出力に追加する。`npm run icons:theme` で `public/theme-icons/` に単独生成することもできる。Chrome の manifest には `theme_icons` を含めない。
 - Firefox は WXT のデフォルトが Manifest V2 のため、**Firefox のコマンドに `--mv3` を必ず指定**する。
 - Firefox の拡張機能 ID は `@link-fixer.tomoyuki-yanagisawa` とし、公開後も維持する。
 - 拡張機能の外部で保存・処理するためのユーザーデータ収集・送信は行わないため、Firefox のデータ収集申告を `none` とする。
