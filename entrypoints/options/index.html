@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="manifest.open_in_tab" content="true" />
@@ -11,27 +11,25 @@
   <body>
     <header>
       <h1>Link Fixer</h1>
-      <p class="hint">
-        URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
-      </p>
+      <p class="hint">{{options_lead}}</p>
     </header>
 
     <main>
       <fieldset>
-        <legend>サイトアクセス</legend>
-        <p id="permission-status" class="status">サイトアクセスの状態を確認しています…</p>
+        <legend>{{options_siteAccess_legend}}</legend>
+        <p id="permission-status" class="status">
+          {{options_siteAccess_checking}}
+        </p>
         <button type="button" id="permission-request" disabled>
-          サイトアクセスを許可
+          {{options_siteAccess_request}}
         </button>
       </fieldset>
 
       <form id="form">
         <fieldset>
-          <legend>ルール</legend>
+          <legend>{{options_rules_legend}}</legend>
 
-          <p class="hint">
-            左の正規表現にマッチした URL を、右の URL に置き換えます。正規表現は DNR が受け付ける形式で指定してください。
-          </p>
+          <p class="hint">{{options_rules_hint}}</p>
 
           <div id="rows"></div>
 
@@ -40,7 +38,7 @@
               <input
                 type="text"
                 class="regex"
-                aria-label="マッチする正規表現"
+                aria-label="{{options_rules_regexLabel}}"
                 spellcheck="false"
                 autocomplete="off"
                 placeholder="^https://example\.com/search\?q=(.*)$"
@@ -48,31 +46,31 @@
               <input
                 type="text"
                 class="substitution"
-                aria-label="置換後の URL"
+                aria-label="{{options_rules_substitutionLabel}}"
                 spellcheck="false"
                 autocomplete="off"
                 placeholder="https://example.com/find?query=\1"
               />
-              <button type="button" class="remove">削除</button>
+              <button type="button" class="remove">
+                {{options_rules_remove}}
+              </button>
             </div>
           </template>
 
           <div class="actions">
-            <button type="button" id="add">ルールを追加</button>
+            <button type="button" id="add">{{options_rules_add}}</button>
           </div>
         </fieldset>
 
         <div class="actions">
           <p id="status" class="status" role="status" aria-live="polite"></p>
-          <button type="submit" id="save">保存</button>
+          <button type="submit" id="save">{{options_rules_save}}</button>
         </div>
       </form>
 
       <fieldset>
-        <legend>Playground</legend>
-        <p class="hint">
-          保存済みのルールで URL がどう書き換わるかを試せます。DNR の条件（大文字小文字を区別しない、fragment は除外）に合わせて判定します。
-        </p>
+        <legend>{{options_playground_legend}}</legend>
+        <p class="hint">{{options_playground_hint}}</p>
 
         <div class="playground-controls">
           <input
@@ -81,12 +79,19 @@
             spellcheck="false"
             autocomplete="off"
             placeholder="https://example.com/old/123"
-            aria-label="試す URL"
+            aria-label="{{options_playground_urlLabel}}"
           />
-          <button type="button" id="playground-run">実行</button>
+          <button type="button" id="playground-run">
+            {{options_playground_run}}
+          </button>
         </div>
 
-        <textarea id="playground-result" rows="6" readonly aria-label="Playground の結果"></textarea>
+        <textarea
+          id="playground-result"
+          rows="6"
+          readonly
+          aria-label="{{options_playground_resultLabel}}"
+        ></textarea>
       </fieldset>
     </main>
 

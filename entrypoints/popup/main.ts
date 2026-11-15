@@ -1,10 +1,13 @@
 import { browser } from 'wxt/browser';
+import { requiredElement } from '@/utils/dom';
+import { localize } from '@/utils/i18n-template';
 
-const openOptionsButton = document.querySelector<HTMLButtonElement>('#open-options');
+localize();
 
-if (!openOptionsButton) {
-  throw new Error('Element not found: #open-options');
-}
+const openOptionsButton = requiredElement<HTMLButtonElement>(
+  document,
+  '#open-options',
+);
 
 openOptionsButton.addEventListener('click', async () => {
   await browser.runtime.openOptionsPage();
