@@ -1,4 +1,7 @@
 import { browser } from 'wxt/browser';
+import { localize } from '@/utils/i18n';
+
+localize();
 
 const openOptionsButton = document.querySelector<HTMLButtonElement>('#open-options');
 

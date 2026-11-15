@@ -1,36 +1,46 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="manifest.open_in_tab" content="true" />
-    <title>Link Fixer</title>
+    <title data-i18n="extensionName">Link Fixer</title>
     <link rel="stylesheet" href="./style.css" />
     <link rel="icon" href="/icons/16.png" sizes="16x16" />
     <link rel="icon" href="/icons/32.png" sizes="32x32" />
   </head>
   <body>
     <header>
-      <h1>Link Fixer</h1>
-      <p class="hint">
-        URL を書き換えるルールを登録できます。上から順に評価され、最初にマッチしたルールが適用されます。
+      <h1 data-i18n="extensionName">Link Fixer</h1>
+      <p class="hint" data-i18n="options_lead">
+        Register rules that rewrite URLs. They are evaluated from top to bottom,
+        and the first matching rule is applied.
       </p>
     </header>
 
     <main>
       <fieldset>
-        <legend>サイトアクセス</legend>
-        <p id="permission-status" class="status">サイトアクセスの状態を確認しています…</p>
-        <button type="button" id="permission-request" disabled>
-          サイトアクセスを許可
+        <legend data-i18n="options_siteAccess_legend">Site access</legend>
+        <p id="permission-status" class="status" data-i18n="options_siteAccess_checking">
+          Checking site access…
+        </p>
+        <button
+          type="button"
+          id="permission-request"
+          data-i18n="options_siteAccess_request"
+          disabled
+        >
+          Allow site access
         </button>
       </fieldset>
 
       <form id="form">
         <fieldset>
-          <legend>ルール</legend>
+          <legend data-i18n="options_rules_legend">Rules</legend>
 
-          <p class="hint">
-            左の正規表現にマッチした URL を、右の URL に置き換えます。正規表現は DNR が受け付ける形式で指定してください。
+          <p class="hint" data-i18n="options_rules_hint">
+            URLs matching the regular expression on the left are replaced with
+            the URL on the right. Use the regular expression syntax accepted by
+            DNR.
           </p>
 
           <div id="rows"></div>
@@ -40,7 +50,8 @@
               <input
                 type="text"
                 class="regex"
-                aria-label="マッチする正規表現"
+                aria-label="Matching regular expression"
+                data-i18n-aria-label="options_rules_regexLabel"
                 spellcheck="false"
                 autocomplete="off"
                 placeholder="^https://example\.com/search\?q=(.*)$"
@@ -48,30 +59,42 @@
               <input
                 type="text"
                 class="substitution"
-                aria-label="置換後の URL"
+                aria-label="Replacement URL"
+                data-i18n-aria-label="options_rules_substitutionLabel"
                 spellcheck="false"
                 autocomplete="off"
                 placeholder="https://example.com/find?query=\1"
               />
-              <button type="button" class="remove">削除</button>
+              <button
+                type="button"
+                class="remove"
+                data-i18n="options_rules_remove"
+              >
+                Remove
+              </button>
             </div>
           </template>
 
           <div class="actions">
-            <button type="button" id="add">ルールを追加</button>
+            <button type="button" id="add" data-i18n="options_rules_add">
+              Add rule
+            </button>
           </div>
         </fieldset>
 
         <div class="actions">
           <p id="status" class="status" role="status" aria-live="polite"></p>
-          <button type="submit" id="save">保存</button>
+          <button type="submit" id="save" data-i18n="options_rules_save">
+            Save
+          </button>
         </div>
       </form>
 
       <fieldset>
-        <legend>Playground</legend>
-        <p class="hint">
-          保存済みのルールで URL がどう書き換わるかを試せます。DNR の条件（大文字小文字を区別しない、fragment は除外）に合わせて判定します。
+        <legend data-i18n="options_playground_legend">Playground</legend>
+        <p class="hint" data-i18n="options_playground_hint">
+          Try how the saved rules rewrite a URL. Matching follows the DNR
+          conditions (case-insensitive, fragments excluded).
         </p>
 
         <div class="playground-controls">
@@ -81,12 +104,25 @@
             spellcheck="false"
             autocomplete="off"
             placeholder="https://example.com/old/123"
-            aria-label="試す URL"
+            aria-label="URL to test"
+            data-i18n-aria-label="options_playground_urlLabel"
           />
-          <button type="button" id="playground-run">実行</button>
+          <button
+            type="button"
+            id="playground-run"
+            data-i18n="options_playground_run"
+          >
+            Run
+          </button>
         </div>
 
-        <textarea id="playground-result" rows="6" readonly aria-label="Playground の結果"></textarea>
+        <textarea
+          id="playground-result"
+          rows="6"
+          readonly
+          aria-label="Playground result"
+          data-i18n-aria-label="options_playground_resultLabel"
+        ></textarea>
       </fieldset>
     </main>
 
