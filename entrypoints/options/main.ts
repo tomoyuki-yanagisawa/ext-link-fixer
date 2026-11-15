@@ -1,6 +1,6 @@
 import { browser } from 'wxt/browser';
 import { localize } from '@/utils/i18n';
-import { evaluateRules, formatOutcome, normalizeUrl } from './playground';
+import { evaluateRules, followRedirects, formatOutcome, normalizeUrl } from './playground';
 import { hasHostAccess, requestHostAccess } from './permissions';
 import { loadSavedRules, toDynamicRules, verifyRegex } from './rules';
 
@@ -275,13 +275,24 @@ async function runPlayground() {
 
     const outcomes = evaluateRules(target.url, rules);
 
-    if (!outcomes.some((outcome) => outcome.matched)) {
+    if (!outcomes.some((outcome) => outcome.status !== 'unmatched')) {
       lines.push(browser.i18n.getMessage('options_playground_noMatch'));
     }
 
     outcomes.forEach((outcome, index) => {
       lines.push(formatOutcome(outcome, index, target.url));
     });
+
+    const chain = followRedirects(target.url, rules);
+    chain.steps.slice(1).forEach((step, index) => {
+      lines.push(browser.i18n.getMessage('options_playground_chainStep', [
+        String(index + 2), String(step.line), step.url,
+      ]));
+    });
+    if (chain.exceeded) {
+      playgroundResultEl.className = 'error';
+      lines.push(browser.i18n.getMessage('options_playground_chainLimit', [String(rules.length)]));
+    }
 
     playgroundResultEl.value = lines.join('\n');
   } catch (error) {

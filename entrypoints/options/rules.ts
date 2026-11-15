@@ -16,6 +16,7 @@ type DynamicRule = Browser.declarativeNetRequest.Rule;
 
 export async function verifyRegex(regex: string) {
   try {
+    new RegExp(regex, 'i');
     return await browser.declarativeNetRequest.isRegexSupported({
       regex,
       requireCapturing: true,

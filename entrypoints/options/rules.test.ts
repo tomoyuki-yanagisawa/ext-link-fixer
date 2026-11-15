@@ -1,5 +1,29 @@
-import { describe, expect, it } from 'vitest';
-import { toDynamicRules } from './rules';
+import { describe, expect, it, vi } from 'vitest';
+import { toDynamicRules, verifyRegex } from './rules';
+
+const { isRegexSupported } = vi.hoisted(() => ({ isRegexSupported: vi.fn() }));
+vi.mock('wxt/browser', () => ({
+  browser: { declarativeNetRequest: { isRegexSupported } },
+}));
+
+describe('verifyRegex', () => {
+  it('rejects an expression JavaScript cannot parse', async () => {
+    isRegexSupported.mockClear();
+    expect((await verifyRegex('(?P<name>.+)')).isSupported).toBe(false);
+    expect(isRegexSupported).not.toHaveBeenCalled();
+  });
+
+  it('rejects an expression unsupported by DNR', async () => {
+    isRegexSupported.mockResolvedValueOnce({ isSupported: false, reason: 'syntaxError' });
+    expect(await verifyRegex('(?=a)')).toEqual({ isSupported: false, reason: 'syntaxError' });
+  });
+
+  it('accepts an expression supported by both engines', async () => {
+    isRegexSupported.mockResolvedValueOnce({ isSupported: true });
+    expect(await verifyRegex('^https://example\\.com/')).toEqual({ isSupported: true });
+    expect(isRegexSupported).toHaveBeenLastCalledWith({ regex: '^https://example\\.com/', requireCapturing: true });
+  });
+});
 
 describe('toDynamicRules', () => {
   it('assigns higher priority to rules earlier in the list', () => {

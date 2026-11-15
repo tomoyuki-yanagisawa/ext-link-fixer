@@ -1,16 +1,9 @@
 import { browser } from 'wxt/browser';
+import type { RuleDraft } from './rules';
 
-export type MatchingRule = {
-  regex: string;
-  substitution: string;
-};
-
-export type RuleOutcome = {
-  matched: boolean;
-  applied: boolean;
-  /** 書き換え後の URL。マッチしていない場合は null。 */
-  result: string | null;
-};
+export type RuleOutcome =
+  | { status: 'unmatched' }
+  | { status: 'applied' | 'skipped'; result: string };
 
 export type NormalizedUrl = {
   /** 実際のネットワークリクエストに近づけた URL。 */
@@ -56,19 +49,14 @@ function substituteFirstMatch(
  * DNR の `regexFilter` は既定で大文字小文字を区別しないため、`i` フラグで
  * 同じ挙動にしている。保存時に `isRegexSupported` で検証したルールが対象。
  */
-export function evaluateRules(url: string, rules: MatchingRule[]): RuleOutcome[] {
+export function evaluateRules(url: string, rules: RuleDraft[]): RuleOutcome[] {
   let applied = false;
 
   return rules.map((rule) => {
-    let match: RegExpExecArray | null;
-    try {
-      match = new RegExp(rule.regex, 'i').exec(url);
-    } catch {
-      match = null;
-    }
+    const match = new RegExp(rule.regex, 'i').exec(url);
 
     if (!match) {
-      return { matched: false, applied: false, result: null };
+      return { status: 'unmatched' };
     }
 
     const result = substituteFirstMatch(url, match, rule.substitution);
@@ -77,8 +65,33 @@ export function evaluateRules(url: string, rules: MatchingRule[]): RuleOutcome[]
       applied = true;
     }
 
-    return { matched: true, applied: isApplied, result };
+    return { status: isApplied ? 'applied' : 'skipped', result };
   });
+}
+
+export function followRedirects(url: string, rules: RuleDraft[]) {
+  const steps: { line: number; url: string }[] = [];
+  let current = url;
+
+  while (true) {
+    const outcomes = evaluateRules(current, rules);
+    const index = outcomes.findIndex((outcome) => outcome.status === 'applied');
+    const outcome = outcomes[index];
+    if (!outcome || outcome.status !== 'applied') return { steps, exceeded: false };
+    if (steps.length >= rules.length) return { steps, exceeded: true };
+
+    steps.push({ line: index + 1, url: outcome.result });
+    try {
+      const next = new URL(outcome.result);
+      if (next.protocol !== 'http:' && next.protocol !== 'https:') {
+        return { steps, exceeded: false };
+      }
+      next.hash = '';
+      current = next.href;
+    } catch {
+      return { steps, exceeded: false };
+    }
+  }
 }
 
 /** 1 ルール分の結果を、Playground に表示する 1 行へ整形する。 */
@@ -89,19 +102,15 @@ export function formatOutcome(
 ): string {
   const line = index + 1;
 
-  if (!outcome.matched) {
+  if (outcome.status === 'unmatched') {
     return browser.i18n.getMessage('options_playground_lineMiss', [String(line)]);
   }
 
   const status = browser.i18n.getMessage(
-    outcome.applied
+    outcome.status === 'applied'
       ? 'options_playground_statusApplied'
       : 'options_playground_statusNotApplied',
   );
-
-  if (outcome.result === null) {
-    return browser.i18n.getMessage('options_playground_lineMiss', [String(line)]);
-  }
 
   const text = browser.i18n.getMessage('options_playground_lineResult', [String(line), status, outcome.result]);
 
