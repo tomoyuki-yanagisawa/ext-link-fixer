@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateRules, normalizeUrl } from './playground';
+import { evaluateRules, followRedirects, normalizeUrl } from './playground';
 
 describe('normalizeUrl', () => {
   it('normalizes a URL and removes its fragment', () => {
@@ -23,9 +23,9 @@ describe('evaluateRules', () => {
     ]);
 
     expect(outcomes).toEqual([
-      { matched: true, applied: true, result: 'https://example.com/new/123' },
-      { matched: true, applied: false, result: 'https://other.example/OLD/123' },
-      { matched: false, applied: false, result: null },
+      { status: 'applied', result: 'https://example.com/new/123' },
+      { status: 'skipped', result: 'https://other.example/OLD/123' },
+      { status: 'unmatched' },
     ]);
   });
 
@@ -33,7 +33,45 @@ describe('evaluateRules', () => {
     expect(evaluateRules('https://example.com/a/a', [
       { regex: '/a', substitution: '/b' },
     ])).toEqual([
-      { matched: true, applied: true, result: 'https://example.com/b/a' },
+      { status: 'applied', result: 'https://example.com/b/a' },
     ]);
+  });
+});
+
+
+describe('followRedirects', () => {
+  const rules = [
+    { regex: '^https://a/', substitution: 'https://b/' },
+    { regex: '^https://b/', substitution: 'https://c/' },
+  ];
+
+  it('allows a chain that stops at the rule count', () => {
+    expect(followRedirects('https://a/', rules)).toEqual({
+      steps: [{ line: 1, url: 'https://b/' }, { line: 2, url: 'https://c/' }],
+      exceeded: false,
+    });
+  });
+
+  it('reports a chain continuing beyond the rule count', () => {
+    expect(followRedirects('https://a/', [
+      { regex: '^https://a/', substitution: 'https://b/' },
+      { regex: '^https://b/', substitution: 'https://a/' },
+    ]).exceeded).toBe(true);
+  });
+
+  it('accepts a single redirect that terminates', () => {
+    expect(followRedirects('https://a/', rules.slice(0, 1)).exceeded).toBe(false);
+  });
+
+  it('stops when a result is not a valid URL', () => {
+    expect(followRedirects('https://a/', [
+      { regex: '^https://a/', substitution: 'invalid' },
+    ])).toEqual({ steps: [{ line: 1, url: 'invalid' }], exceeded: false });
+  });
+
+  it('reports invalid saved expressions instead of treating them as unmatched', () => {
+    expect(() => followRedirects('https://a/', [
+      { regex: '(', substitution: 'https://b/' },
+    ])).toThrow();
   });
 });
