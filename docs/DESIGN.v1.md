@@ -19,7 +19,7 @@ Firefox / Chrome 共通で動作する、**正規表現による URL リダイ�
 - DNR の動的ルールを設定の保存先としても使い、`storage.local` を使用しない。
 - バックグラウンドスクリプト、コンテンツスクリプト、独自サーバーは作らない。
 - ツールバーのアイコンからポップアップを開き、そこから設定画面を開けるようにする。ポップアップの JS はクリック時だけ動く。
-- テストフレームワークや実行時の追加依存ライブラリは、初版では導入しない。
+- ユニットテストに Vitest を使用する。実行時の追加依存ライブラリは導入しない。
 
 ## 3. 最小ディレクトリ構成
 
@@ -135,8 +135,8 @@ link-fixer/
 
 ### `package.json`
 
-- スクリプトは `dev` / `dev:firefox` / `build` / `build:firefox` / `zip` / `zip:firefox` / `xpi` / `typecheck` / `icons:theme` / `postinstall`。
-- 開発依存は `wxt`、`@wxt-dev/auto-icons`、`sharp`、`typescript`。実行時の依存パッケージは持たない。
+- スクリプトは `dev` / `dev:firefox` / `build` / `build:firefox` / `zip` / `zip:firefox` / `xpi` / `typecheck` / `test` / `icons:theme` / `postinstall`。
+- 開発依存は `wxt`、`@wxt-dev/auto-icons`、`sharp`、`typescript`、`vitest`。実行時の依存パッケージは持たない。
 - `postinstall` の `wxt prepare` で、型チェックに必要な `.wxt/` の設定を生成する。
 - 現在の定義は `package.json` を参照する。
 
@@ -203,17 +203,20 @@ npm run zip              # Chrome 向け zip
 npm run zip:firefox      # Firefox 向け zip
 npm run xpi              # Firefox 向け zip と xpi
 npm run typecheck        # TypeScript の型チェック
+npm test                 # ユニットテスト
 npm run icons:theme      # テーマ別アイコンを単独生成
 ```
 
 生成される拡張機能は `.output/` 以下に出力される。両ブラウザに読み込み、同じルールで動くことを確認する。
+
+`.github/workflows/ci.yml` は PR と `main` への push 時に型チェック、ユニットテスト、Chrome / Firefox 向けビルドを実行する。
 
 ### リリース
 
 `.github/workflows/release.yml` が、`main` ブランチの `package.json` の更新を契機にビルドとリリースを行う。
 
 - `package.json` の `version` と同じ名前のタグ（`v0.1.9` など）のリリースが未作成の場合だけ実行する。バージョンを上げずに `package.json` を変更した場合は何もしない。
-- 型チェックの後、Chrome / Firefox 向けの zip を作成する。Firefox 用は同じ内容を `.xpi` としても添付する。
+- 型チェックとユニットテストの後、Chrome / Firefox 向けの zip を作成する。Firefox 用は同じ内容を `.xpi` としても添付する。
 - 署名は行わない。Firefox の通常版（Release / Beta）は未署名アドオンを拒否するため、次のいずれかで使う。
   - Firefox ESR / Developer Edition / Nightly で `xpinstall.signatures.required` を `false` にして `.xpi` をインストールする
   - `about:debugging` で一時的に読み込む（再起動で消える）
