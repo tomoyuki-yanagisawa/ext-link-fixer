@@ -1,11 +1,8 @@
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir } from 'node:fs/promises';
 import sharp from 'sharp';
 
 const sizes = [16, 32, 48, 128];
-const outDir = 'public/theme-icons';
-
-export async function generateThemeIcons() {
-  await rm(outDir, { recursive: true, force: true });
+export async function generateThemeIcons(outDir = 'public/theme-icons') {
   await mkdir(outDir, { recursive: true });
 
   for (const size of sizes) {

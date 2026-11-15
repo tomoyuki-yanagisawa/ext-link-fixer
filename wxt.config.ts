@@ -5,8 +5,19 @@ import { generateThemeIcons } from './scripts/theme-icons.mjs';
 export default defineConfig({
   modules: ['@wxt-dev/auto-icons'],
   hooks: {
-    async 'build:before'() {
-      await generateThemeIcons();
+    async 'build:publicAssets'(wxt, files) {
+      if (wxt.config.browser !== 'firefox') return;
+      const dir = `${wxt.config.wxtDir}/theme-icons`;
+      await generateThemeIcons(dir);
+      for (const size of [16, 32, 48, 128]) {
+        for (const theme of ['light', 'dark']) {
+          const name = `icon-on-${theme}-${size}.png`;
+          const relativeDest = `theme-icons/${name}`;
+          const existing = files.findIndex((file) => file.relativeDest === relativeDest);
+          if (existing !== -1) files.splice(existing, 1);
+          files.push({ absoluteSrc: `${dir}/${name}`, relativeDest });
+        }
+      }
     },
   },
   autoIcons: {
