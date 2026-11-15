@@ -14,6 +14,8 @@
   "options_rules_regexLabel": { "message": "Matching regular expression" },
   "options_rules_substitutionLabel": { "message": "Replacement URL" },
   "options_rules_remove": { "message": "Remove" },
+  "options_rules_moveUp": { "message": "Move rule up" },
+  "options_rules_moveDown": { "message": "Move rule down" },
   "options_rules_add": { "message": "Add rule" },
   "options_rules_save": { "message": "Save" },
   "options_rules_loading": { "message": "Loading…" },

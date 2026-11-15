@@ -65,13 +65,13 @@
                 autocomplete="off"
                 placeholder="https://example.com/find?query=\1"
               />
-              <button
-                type="button"
-                class="remove"
-                data-i18n="options_rules_remove"
-              >
-                Remove
-              </button>
+              <div class="rule-actions">
+                <button type="button" class="move-up" aria-label="Move rule up" data-i18n-aria-label="options_rules_moveUp">↑</button>
+                <button type="button" class="move-down" aria-label="Move rule down" data-i18n-aria-label="options_rules_moveDown">↓</button>
+                <button type="button" class="remove" data-i18n="options_rules_remove">
+                  Remove
+                </button>
+              </div>
             </div>
           </template>
 
