@@ -9,7 +9,10 @@ const { getDynamicRules, updateDynamicRules } = vi.hoisted(() => ({
 
 vi.mock('wxt/browser', () => ({
   browser: {
-    i18n: { getUILanguage: () => 'en', getMessage: (key: string) => key },
+    i18n: {
+      getUILanguage: () => 'en',
+      getMessage: (key: string, substitutions: string[] = []) => [key, ...substitutions].join(' '),
+    },
     declarativeNetRequest: {
       getDynamicRules,
       updateDynamicRules,
@@ -63,5 +66,26 @@ describe('rule ordering', () => {
     added.querySelector<HTMLButtonElement>('.remove')!.click();
     expect(rows()).toHaveLength(2);
     expect(rows()[1]!.querySelector<HTMLButtonElement>('.move-down')!.disabled).toBe(true);
+  });
+
+  it.each(['not a URL', 'example.com', 'ftp://example.com/', 'javascript:alert(1)'])(
+    'rejects invalid Playground input: %s',
+    (url) => {
+      getDynamicRules.mockClear();
+      document.querySelector<HTMLInputElement>('#playground-url')!.value = url;
+      document.querySelector<HTMLButtonElement>('#playground-run')!.click();
+      expect(document.querySelector<HTMLTextAreaElement>('#playground-result')!.value)
+        .toContain('options_playground_invalidInput');
+      expect(getDynamicRules).not.toHaveBeenCalled();
+    },
+  );
+
+  it('accepts an HTTP URL in the Playground', async () => {
+    getDynamicRules.mockClear();
+    document.querySelector<HTMLInputElement>('#playground-url')!.value = 'http://example.com/';
+    document.querySelector<HTMLButtonElement>('#playground-run')!.click();
+    await vi.waitFor(() => expect(getDynamicRules).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(document.querySelector<HTMLButtonElement>('#playground-run')!.disabled).toBe(false));
+    expect(document.querySelector<HTMLTextAreaElement>('#playground-result')!.className).toBe('');
   });
 });

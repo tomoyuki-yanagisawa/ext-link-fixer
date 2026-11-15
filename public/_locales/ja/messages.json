@@ -35,6 +35,7 @@
   "options_playground_run": { "message": "実行" },
   "options_playground_resultLabel": { "message": "Playground の結果" },
   "options_playground_urlRequired": { "message": "試す URL を入力してください。" },
+  "options_playground_invalidInput": { "message": "有効な HTTP または HTTPS の URL を入力してください。" },
   "options_playground_empty": { "message": "保存済みのルールがありません。" },
   "options_playground_fragmentIgnored": { "message": "# 以降はネットワークリクエストに含まれないため、判定から除外しています。" },
   "options_playground_noMatch": { "message": "どのルールにもマッチしませんでした。" },

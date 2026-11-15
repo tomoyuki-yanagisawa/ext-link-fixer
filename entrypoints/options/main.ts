@@ -253,6 +253,16 @@ async function runPlayground() {
     return;
   }
 
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      throw new Error('Unsupported URL scheme');
+    }
+  } catch {
+    showPlaygroundError(browser.i18n.getMessage('options_playground_invalidInput'));
+    return;
+  }
+
   playgroundRunButton.disabled = true;
   playgroundResultEl.className = '';
 

@@ -7,10 +7,7 @@ export type SavedRule = {
   substitution: string;
 };
 
-export type RuleDraft = {
-  regex: string;
-  substitution: string;
-};
+export type RuleDraft = Omit<SavedRule, 'id'>;
 
 type DynamicRule = Browser.declarativeNetRequest.Rule;
 
