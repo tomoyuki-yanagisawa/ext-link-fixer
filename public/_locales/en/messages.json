@@ -35,6 +35,7 @@
   "options_playground_run": { "message": "Run" },
   "options_playground_resultLabel": { "message": "Playground result" },
   "options_playground_urlRequired": { "message": "Enter a URL to test." },
+  "options_playground_invalidInput": { "message": "Enter a valid HTTP or HTTPS URL." },
   "options_playground_empty": { "message": "There are no saved rules." },
   "options_playground_fragmentIgnored": { "message": "Text after # is not part of the network request, so it is excluded from matching." },
   "options_playground_noMatch": { "message": "No rule matched." },
