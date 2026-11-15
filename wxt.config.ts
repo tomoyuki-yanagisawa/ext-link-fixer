@@ -14,9 +14,11 @@ export default defineConfig({
   },
 
   manifest: ({ browser }) => ({
-    name: 'Link Fixer',
+    name: '__MSG_extensionName__',
+    description: '__MSG_extensionDescription__',
+    default_locale: 'en',
     action: {
-      default_title: 'Link Fixer',
+      default_title: '__MSG_extensionName__',
       default_icon: {
         16: 'icons/16.png',
         32: 'icons/32.png',
