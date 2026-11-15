@@ -3,7 +3,6 @@ import type { Browser } from 'wxt/browser';
 
 export type SavedRule = {
   id: number;
-  priority: number;
   regex: string;
   substitution: string;
 };
@@ -35,12 +34,10 @@ export async function loadSavedRules(): Promise<SavedRule[]> {
   return rules
     .map((rule) => ({
       id: rule.id,
-      priority: rule.priority ?? 0,
       regex: rule.condition?.regexFilter ?? '',
       substitution: rule.action?.redirect?.regexSubstitution ?? '',
     }))
-    .filter((rule) => rule.regex !== '' && rule.substitution !== '')
-    .sort((a, b) => b.priority - a.priority || a.id - b.id);
+    .sort((a, b) => a.id - b.id);
 }
 
 export function toDynamicRules(drafts: RuleDraft[]): DynamicRule[] {

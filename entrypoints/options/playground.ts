@@ -1,16 +1,14 @@
 import { browser } from 'wxt/browser';
 
 export type MatchingRule = {
-  id: number;
   regex: string;
   substitution: string;
 };
 
 export type RuleOutcome = {
-  rule: MatchingRule;
   matched: boolean;
   applied: boolean;
-  /** 書き換え後の URL。マッチしていない、または計算できない場合は null。 */
+  /** 書き換え後の URL。マッチしていない場合は null。 */
   result: string | null;
 };
 
@@ -70,7 +68,7 @@ export function evaluateRules(url: string, rules: MatchingRule[]): RuleOutcome[]
     }
 
     if (!match) {
-      return { rule, matched: false, applied: false, result: null };
+      return { matched: false, applied: false, result: null };
     }
 
     const result = substituteFirstMatch(url, match, rule.substitution);
@@ -79,7 +77,7 @@ export function evaluateRules(url: string, rules: MatchingRule[]): RuleOutcome[]
       applied = true;
     }
 
-    return { rule, matched: true, applied: isApplied, result };
+    return { matched: true, applied: isApplied, result };
   });
 }
 
@@ -101,16 +99,11 @@ export function formatOutcome(
       : 'options_playground_statusNotApplied',
   );
 
-  const url =
-    outcome.result === null
-      ? browser.i18n.getMessage('options_playground_uncomputable')
-      : outcome.result;
-
-  const text = browser.i18n.getMessage('options_playground_lineResult', [String(line), status, url]);
-
   if (outcome.result === null) {
-    return text;
+    return browser.i18n.getMessage('options_playground_lineMiss', [String(line)]);
   }
+
+  const text = browser.i18n.getMessage('options_playground_lineResult', [String(line), status, outcome.result]);
 
   if (outcome.result === targetUrl) {
     return text + browser.i18n.getMessage('options_playground_unchanged');

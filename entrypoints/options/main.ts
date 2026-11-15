@@ -11,6 +11,7 @@ function requiredElement<T extends Element>(root: ParentNode, selector: string):
 }
 
 const formEl = requiredElement<HTMLFormElement>(document, '#form');
+const rulesFieldset = requiredElement<HTMLFieldSetElement>(formEl, 'fieldset');
 const rowsEl = requiredElement<HTMLDivElement>(document, '#rows');
 const statusEl = requiredElement<HTMLParagraphElement>(document, '#status');
 const addButton = requiredElement<HTMLButtonElement>(document, '#add');
@@ -95,24 +96,31 @@ function focusInput(row: Element | undefined, selector: string) {
   }
 }
 
+let rulesReady = false;
+let saving = false;
+
+function setRulesDisabled(disabled: boolean) {
+  rulesFieldset.disabled = disabled;
+  saveButton.disabled = disabled;
+}
+
 async function loadRules() {
+  setRulesDisabled(true);
   setStatus(browser.i18n.getMessage('options_rules_loading'));
 
   try {
-    const rules = await browser.declarativeNetRequest.getDynamicRules();
-    rules.sort((a, b) => a.id - b.id);
+    const rules = await loadSavedRules();
 
     rowsEl.replaceChildren();
     for (const rule of rules) {
-      appendRow(
-        rule.condition?.regexFilter ?? '',
-        rule.action?.redirect?.regexSubstitution ?? '',
-      );
+      appendRow(rule.regex, rule.substitution);
     }
     if (!rules.length) {
       appendRow();
     }
 
+    rulesReady = true;
+    setRulesDisabled(false);
     setStatus('');
   } catch (error) {
     setStatus(
@@ -130,46 +138,51 @@ type RuleEntry = RowEntry & {
 };
 
 async function saveRules() {
-  const entries: RuleEntry[] = [];
-
-  for (const [index, row] of readRows().entries()) {
-    const regexEmpty = row.regex.trim() === '';
-    const substitutionEmpty = row.substitution.trim() === '';
-
-    if (regexEmpty && substitutionEmpty) {
-      continue;
-    }
-    if (regexEmpty || substitutionEmpty) {
-      setStatus(
-        browser.i18n.getMessage('options_rules_bothRequired', [String(index + 1)]),
-        'error',
-      );
-      focusInput(row.row, regexEmpty ? '.regex' : '.substitution');
-      return;
-    }
-
-    entries.push({ ...row, line: index + 1 });
-  }
-
-  for (const entry of entries) {
-    const result = await verifyRegex(entry.regex);
-    if (!result.isSupported) {
-      setStatus(
-        browser.i18n.getMessage('options_rules_unsupported', [
-          String(entry.line),
-          result.reason ?? browser.i18n.getMessage('options_rules_unknownReason'),
-        ]),
-        'error',
-      );
-      focusInput(entry.row, '.regex');
-      return;
-    }
-  }
-
-  saveButton.disabled = true;
-  setStatus(browser.i18n.getMessage('options_rules_saving'));
+  if (!rulesReady || saving) return;
+  saving = true;
+  setRulesDisabled(true);
 
   try {
+    const entries: RuleEntry[] = [];
+
+    for (const [index, row] of readRows().entries()) {
+      const regexEmpty = row.regex.trim() === '';
+      const substitutionEmpty = row.substitution.trim() === '';
+
+      if (regexEmpty && substitutionEmpty) {
+        continue;
+      }
+      if (regexEmpty || substitutionEmpty) {
+        setStatus(
+          browser.i18n.getMessage('options_rules_bothRequired', [String(index + 1)]),
+          'error',
+        );
+        setRulesDisabled(false);
+        focusInput(row.row, regexEmpty ? '.regex' : '.substitution');
+        return;
+      }
+
+      entries.push({ ...row, line: index + 1 });
+    }
+
+    for (const entry of entries) {
+      const result = await verifyRegex(entry.regex);
+      if (!result.isSupported) {
+        setStatus(
+          browser.i18n.getMessage('options_rules_unsupported', [
+            String(entry.line),
+            result.reason ?? browser.i18n.getMessage('options_rules_unknownReason'),
+          ]),
+          'error',
+        );
+        setRulesDisabled(false);
+        focusInput(entry.row, '.regex');
+        return;
+      }
+    }
+
+    setStatus(browser.i18n.getMessage('options_rules_saving'));
+
     const addRules = toDynamicRules(
       entries.map(({ regex, substitution }) => ({ regex, substitution })),
     );
@@ -192,7 +205,8 @@ async function saveRules() {
       'error',
     );
   } finally {
-    saveButton.disabled = false;
+    saving = false;
+    setRulesDisabled(false);
   }
 }
 
@@ -213,7 +227,9 @@ async function runPlayground() {
   playgroundResultEl.className = '';
 
   try {
-    const rules = await loadSavedRules();
+    const rules = (await loadSavedRules()).filter(
+      (rule) => rule.regex !== '' && rule.substitution !== '',
+    );
 
     if (!rules.length) {
       playgroundResultEl.value = browser.i18n.getMessage('options_playground_empty');
@@ -257,7 +273,12 @@ function setPermissionState(granted: boolean) {
 }
 
 async function updatePermissionState() {
-  setPermissionState(await hasHostAccess());
+  try {
+    setPermissionState(await hasHostAccess());
+  } catch {
+    permissionRequestButton.disabled = false;
+    setStatusText(permissionStatusEl, browser.i18n.getMessage('options_siteAccess_checkFailed'), 'error');
+  }
 }
 
 permissionRequestButton.addEventListener('click', async () => {
