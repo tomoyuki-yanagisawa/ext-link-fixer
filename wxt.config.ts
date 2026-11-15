@@ -1,4 +1,3 @@
-import '@wxt-dev/auto-icons';
 import { defineConfig } from 'wxt';
 
 export default defineConfig({
